@@ -2,8 +2,8 @@ import _ from 'lodash';
 const Discord = require('discord.js');
 
 require('dotenv').config();
-import { getAccountDetail } from './api/ftxApi';
-import { accountEmbed } from './botMessages';
+import { getAccountDetail, getOpenPositions } from './api/ftxApi';
+import { accountEmbed, openPositionsEmbed } from './botMessages';
 
 const client = new Discord.Client();
 const TOKEN = process.env.TOKEN;
@@ -24,13 +24,10 @@ client.on('rateLimit', (info) => {
 });
 
 const setBot = async () => {
-  console.info(`Logged in as ${client.user.tag}!`); // Logged in as FTX#0760!
+  console.info(`Logged in as ${client.user.tag}!`);
   client.on('message', (msg) => {
     if (msg.content === '.account') {
-      // console.log(Date.now());
-      async function fetchData() {
-        let timestamp = Date.now();
-
+      const fetchAccount = async () => {
         const accountData = await getAccountDetail();
         const {
           totalAccountValue,
@@ -47,8 +44,23 @@ const setBot = async () => {
         );
 
         msg.channel.send(embed);
-      }
-      fetchData();
+      };
+
+      fetchAccount();
+    }
+    if (msg.content === '.positions') {
+      const fetchPositions = async () => {
+        const positionsData = await getOpenPositions();
+        let str = '';
+        positionsData.map((p) => {
+          str += `${p.ticker} [${p.side}]\nNet Size: ${p.netSize}\nCost($): ${p.costUsd}\nAvg Entry: ${p.recentAverageOpenPrice}\nBreak Even: ${p.recentBreakEvenPrice}\nuPnL: ${p.recentPnl}\n \n\n`;
+        });
+
+        const embedPositions = openPositionsEmbed(str);
+        msg.channel.send(embedPositions);
+      };
+
+      fetchPositions();
     }
   });
 };
