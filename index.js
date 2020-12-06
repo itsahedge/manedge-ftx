@@ -2,7 +2,7 @@ import _ from 'lodash';
 const Discord = require('discord.js');
 
 require('dotenv').config();
-import { getAccountDetail } from './ftxApi';
+import { getAccountDetail } from './api/ftxApi';
 import { accountEmbed } from './botMessages';
 
 const client = new Discord.Client();
@@ -26,7 +26,7 @@ client.on('rateLimit', (info) => {
 const setBot = async () => {
   console.info(`Logged in as ${client.user.tag}!`); // Logged in as FTX#0760!
   client.on('message', (msg) => {
-    if (msg.content === 'test') {
+    if (msg.content === '.account') {
       // console.log(Date.now());
       async function fetchData() {
         let timestamp = Date.now();
