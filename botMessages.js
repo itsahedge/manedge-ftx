@@ -21,6 +21,11 @@ export const accountEmbed = (
       inline: true,
     })
     .addFields({
+      name: '\u200b',
+      value: '\u200b',
+      inline: false,
+    })
+    .addFields({
       name: 'Total Collateral',
       value: `$${collateral}`,
       inline: true,
@@ -29,4 +34,16 @@ export const accountEmbed = (
       name: 'Free Collateral',
       value: `$${freeCollateral}`,
       inline: true,
-    });
+    })
+    .setTimestamp();
+
+export const openPositionsEmbed = (str) =>
+  new Discord.MessageEmbed()
+    .setTitle('Open Positions')
+    .setColor(0x00ae86)
+    .addFields({
+      name: 'Position',
+      value: `${str}`,
+    })
+
+    .setTimestamp();
