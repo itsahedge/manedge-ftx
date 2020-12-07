@@ -2,7 +2,11 @@ import _ from 'lodash';
 const Discord = require('discord.js');
 
 require('dotenv').config();
-import { getAccountDetail, getOpenPositions } from './api/ftxApi';
+import {
+  getAccountDetail,
+  getOpenPositions,
+  getOpenOrders,
+} from './api/ftxApi';
 import { accountEmbed, openPositionsEmbed } from './botMessages';
 
 const client = new Discord.Client();
@@ -22,6 +26,11 @@ client.on('rateLimit', (info) => {
     }`
   );
 });
+
+//TODO:
+// market-buy X amount for ABC market
+// market-sell X amount for ABC market
+// market-sell to close current open position in full and half size
 
 const setBot = async () => {
   console.info(`Logged in as ${client.user.tag}!`);
@@ -61,6 +70,22 @@ const setBot = async () => {
       };
 
       fetchPositions();
+    }
+    if (msg.content.toLowerCase().startsWith('.open')) {
+      const testTicker = msg.content.toUpperCase();
+      const newTicker = testTicker.slice(6);
+
+      const fetchOpenOrders = async (newTicker) => {
+        const openOrdersData = await getOpenOrders(newTicker);
+
+        let str = '';
+        openOrdersData.map((p) => {
+          str += `${p.market}\n${p.type}\n${p.status}\n${p.price}\n${p.size}\n${p.remainingSize} \n\n`;
+        });
+
+        msg.channel.send(str);
+      };
+      fetchOpenOrders(newTicker);
     }
   });
 };
