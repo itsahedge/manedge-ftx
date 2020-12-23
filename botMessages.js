@@ -41,6 +41,19 @@ export const openPositionsEmbed = (str) =>
   new Discord.MessageEmbed()
     .setTitle('Open Positions')
     .setColor(0x00ae86)
+    .setThumbnail('https://cdn.discordapp.com/embed/avatars/0.png')
+    .addFields({
+      name: 'Position',
+      value: `${str}`,
+    })
+
+    .setTimestamp();
+
+export const openOrdersEmbed = (str) =>
+  new Discord.MessageEmbed()
+    .setTitle('Open Positions')
+    .setColor(0x00ae86)
+    .setThumbnail('https://cdn.discordapp.com/embed/avatars/0.png')
     .addFields({
       name: 'Position',
       value: `${str}`,

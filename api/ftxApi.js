@@ -105,12 +105,15 @@ export const getOpenOrders = async (newTicker) => {
     o.status === 'open'
       ? [
           {
+            id: o.id,
             market: o.market,
-            type: o.type,
-            status: o.status,
+            type: o.type.toUpperCase(),
+            side: o.side.toUpperCase(),
+            status: o.status.toUpperCase(),
             price: o.price,
             size: o.size,
             remainingSize: o.remainingSize,
+            filledSize: o.filledSize,
           },
         ]
       : []
