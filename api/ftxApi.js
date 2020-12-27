@@ -1,23 +1,11 @@
 import FTX from 'ftx-api-rest';
-import { type } from 'os';
 
-export const getAccountDetail = async () => {
-  const key = process.env.KEY;
-  const secret = process.env.SECRET;
-  const subaccount = process.env.SUBACCOUNT;
-
-  const ftx = new FTX({
-    key,
-    secret,
-    subaccount,
-  });
-
-  const draft = await ftx.createDraft({
+export const getAccountDetail = async (ftx) => {
+  const data = await ftx.request({
     method: 'GET',
-    path: '/account',
+    path: '/account'
   });
 
-  const data = await ftx.requestDraft(draft);
   const {
     result: {
       username,
@@ -37,23 +25,11 @@ export const getAccountDetail = async () => {
   };
 };
 
-export const getOpenPositions = async () => {
-  const key = process.env.KEY;
-  const secret = process.env.SECRET;
-  const subaccount = process.env.SUBACCOUNT;
-
-  const ftx = new FTX({
-    key,
-    secret,
-    subaccount,
-  });
-
-  const draft = await ftx.createDraft({
+export const getOpenPositions = async (ftx) => {
+  const data = await ftx.request({
     method: 'GET',
     path: '/positions?showAvgPrice=true',
   });
-
-  const data = await ftx.requestDraft(draft);
 
   const { result } = data;
 
@@ -62,7 +38,7 @@ export const getOpenPositions = async () => {
       ? [
           {
             ticker: o.future,
-            side: o.side,
+            side: o.side === "buy" ? "LONG" : "SHORT",
             entryPrice: o.entryPrice, // this actually gives the Mark Price.
             costUsd: o.cost, // equal to size * entry price == costUsd
             netSize: o.netSize,
@@ -76,7 +52,6 @@ export const getOpenPositions = async () => {
       : []
   );
 
-  // console.log(openPositions);
   return openPositions;
 };
 

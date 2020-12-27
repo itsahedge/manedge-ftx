@@ -11,25 +11,3 @@ export const ftx = new FTX({
   secret,
   subaccount,
 });
-
-export const accountDraft = ftx.createDraft({
-  method: 'GET',
-  path: '/account',
-});
-
-export const positionDraft = ftx.createDraft({
-  method: 'GET',
-  path: '/positions?showAvgPrice=true',
-});
-
-// export const openTriggersDraft = ftx.createDraft({
-//   method: 'GET',
-//   path: '/conditional_orders?market={RUNE-PERP}',
-// });
-
-export const placeOrderDraft = (data) =>
-  ftx.createDraft({
-    method: 'POST',
-    path: '/orders',
-    data: data,
-  });

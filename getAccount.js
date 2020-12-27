@@ -23,7 +23,8 @@ import { ftx, accountDraft, positionDraft, placeOrderDraft } from './constants';
 
 // ACCOUNT DETAILS
 export const getAccount = async () => {
-  const data = await ftx.requestDraft(accountDraft);
+  // const data = await ftx.requestDraft(accountDraft);
+  const data = await ftx.request({ method: 'GET', path: '/account'})
   const {
     result: {
       username,

@@ -1,6 +1,7 @@
 import _ from 'lodash';
 const Discord = require('discord.js');
 
+import { ftx } from "./constants"
 require('dotenv').config();
 import { ftx } from './constants';
 
@@ -9,11 +10,7 @@ import {
   getOpenPositions,
   getOpenOrders,
 } from './api/ftxApi';
-import {
-  accountEmbed,
-  openPositionsEmbed,
-  openOrdersEmbed,
-} from './botMessages';
+import { accountEmbed, openPositionsEmbed } from './botMessages';
 
 const client = new Discord.Client();
 const TOKEN = process.env.TOKEN;
@@ -33,6 +30,7 @@ client.on('rateLimit', (info) => {
   );
 });
 
+
 //TODO:
 // market-buy X amount for ABC market
 // market-sell X amount for ABC market
@@ -40,10 +38,13 @@ client.on('rateLimit', (info) => {
 
 const setBot = async () => {
   console.info(`Logged in as ${client.user.tag}!`);
+
   client.on('message', (msg) => {
+    
+    // ACCOUNT DETAILS
     if (msg.content === '.account') {
       const fetchAccount = async () => {
-        const accountData = await getAccountDetail();
+        const accountData = await getAccountDetail(ftx);
         const {
           totalAccountValue,
           totalPositionSize,
@@ -51,32 +52,34 @@ const setBot = async () => {
           freeCollateral,
         } = accountData;
 
-        const embed = accountEmbed(
-          totalAccountValue,
-          totalPositionSize,
-          collateral,
-          freeCollateral
-        );
-
-        msg.channel.send(embed);
+        msg.channel.send(`
+          **Total Account Value**: ${totalAccountValue}\n**Total Position Size**: ${totalPositionSize}\n**Collateral**: ${collateral}\n**Free Collateral**: ${freeCollateral}\n
+        `);
       };
 
       fetchAccount();
     }
+
+    // OPEN POSITIONS
     if (msg.content === '.positions') {
       const fetchPositions = async () => {
-        const positionsData = await getOpenPositions();
+        const positionsData = await getOpenPositions(ftx);
         let str = '';
         positionsData.map((p) => {
-          str += `${p.ticker} [${p.side}]\nNet Size: ${p.netSize}\nCost($): ${p.costUsd}\nAvg Entry: ${p.recentAverageOpenPrice}\nBreak Even: ${p.recentBreakEvenPrice}\nuPnL: ${p.recentPnl}\n \n\n`;
+          str += `[${p.side}]: ${p.ticker}\nNet Size: ${p.netSize}\nCost($): ${p.costUsd}\nAvg Entry: ${p.recentAverageOpenPrice}\nBreak Even: ${p.recentBreakEvenPrice}\nuPnL: ${p.recentPnl}\n \n\n`;
         });
 
-        const embedPositions = openPositionsEmbed(str);
-        msg.channel.send(embedPositions);
+        if (str) {
+          msg.channel.send(str);
+        } else {
+          msg.channel.send("No open positions");
+        }
       };
 
       fetchPositions();
-    }
+    };
+
+    // OPEN ORDERS
     if (msg.content.toLowerCase().startsWith('.open')) {
       const testTicker = msg.content.toUpperCase();
       console.log(testTicker);
@@ -87,7 +90,7 @@ const setBot = async () => {
 
         let str = '';
         openOrdersData.map((p) => {
-          str += `ID: ${p.id}\nStatus: ${p.status}\n${p.market}\nType: ${p.type}\nSide: ${p.side}\nPrice: ${p.price}\nSize: ${p.size}\nRemaining Size: ${p.remainingSize}\nFilled Size: ${p.filledSize} \n\n`;
+          str += `${p.market}\n${p.type}\n${p.status}\n${p.price}\n${p.size}\n${p.remainingSize} \n\n`;
         });
         const embedOpenOrders = openOrdersEmbed(str);
         msg.channel.send(embedOpenOrders);
