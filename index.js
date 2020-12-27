@@ -3,14 +3,12 @@ const Discord = require('discord.js');
 
 import { ftx } from "./constants"
 require('dotenv').config();
-import { ftx } from './constants';
 
 import {
   getAccountDetail,
   getOpenPositions,
   getOpenOrders,
 } from './api/ftxApi';
-import { accountEmbed, openPositionsEmbed } from './botMessages';
 
 const client = new Discord.Client();
 const TOKEN = process.env.TOKEN;
@@ -38,23 +36,25 @@ client.on('rateLimit', (info) => {
 
 const setBot = async () => {
   console.info(`Logged in as ${client.user.tag}!`);
-
   client.on('message', (msg) => {
-    
     // ACCOUNT DETAILS
     if (msg.content === '.account') {
       const fetchAccount = async () => {
-        const accountData = await getAccountDetail(ftx);
-        const {
-          totalAccountValue,
-          totalPositionSize,
-          collateral,
-          freeCollateral,
-        } = accountData;
+        try {
+          const accountData = await getAccountDetail(ftx);
+          const {
+            totalAccountValue,
+            totalPositionSize,
+            collateral,
+            freeCollateral,
+          } = accountData;
 
-        msg.channel.send(`
-          **Total Account Value**: ${totalAccountValue}\n**Total Position Size**: ${totalPositionSize}\n**Collateral**: ${collateral}\n**Free Collateral**: ${freeCollateral}\n
-        `);
+          msg.channel.send(`
+            **Total Account Value**: ${totalAccountValue}\n**Total Position Size**: ${totalPositionSize}\n**Collateral**: ${collateral}\n**Free Collateral**: ${freeCollateral}\n
+          `);
+        } catch (error) {
+          console.log("API Error", error)
+        }
       };
 
       fetchAccount();
@@ -79,23 +79,43 @@ const setBot = async () => {
       fetchPositions();
     };
 
-    // OPEN ORDERS
-    if (msg.content.toLowerCase().startsWith('.open')) {
+    // TRIGGER ORDERS (TP/STOP)
+    if (msg.content.startsWith('.trigger')) {
       const testTicker = msg.content.toUpperCase();
       console.log(testTicker);
-      const newTicker = testTicker.slice(6);
+      const ticker = testTicker.slice(6);
+      console.log(ticker);
 
-      const fetchOpenOrders = async (newTicker) => {
-        const openOrdersData = await getOpenOrders(newTicker);
+      // const fetchTriggers = await getTriggerOrders()
+    };
 
-        let str = '';
-        openOrdersData.map((p) => {
-          str += `${p.market}\n${p.type}\n${p.status}\n${p.price}\n${p.size}\n${p.remainingSize} \n\n`;
-        });
-        const embedOpenOrders = openOrdersEmbed(str);
-        msg.channel.send(embedOpenOrders);
+    // OPEN ORDERS
+    if (msg.content.toLowerCase().startsWith('.open')) {
+      const input = msg.content.toUpperCase();
+      console.log(input);
+      const ticker = input.slice(6); // removes `.open ` 
+      console.log(ticker)
+
+      // doest show Trigger Orders
+      const fetchOpenOrders = async (ticker) => {
+        try {
+          const openOrdersData = await getOpenOrders(ftx, ticker);
+
+          let str = '';
+          openOrdersData.map((p) => {
+            str += `${p.market}\n${p.type}\n${p.status}\n${p.price}\n${p.size}\n${p.remainingSize} \n\n`;
+          });
+          msg.channel.send(str);
+          if (str) {
+            msg.channel.send(str);
+          } else {
+            msg.channel.send(`No Open Orders for ${ticker}`)
+          }
+        } catch (error) {
+          console.log('API Error', error)
+        }
       };
-      fetchOpenOrders(newTicker);
+      fetchOpenOrders(ticker);
     }
     // CASES:
     // Market close specified amount of size only
