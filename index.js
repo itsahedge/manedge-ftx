@@ -8,6 +8,7 @@ import {
   getAccountDetail,
   getOpenPositions,
   getOpenOrders,
+  getTriggerOrders,
 } from './api/ftxApi';
 
 const client = new Discord.Client();
@@ -58,7 +59,7 @@ const setBot = async () => {
       };
 
       fetchAccount();
-    }
+    };
 
     // OPEN POSITIONS
     if (msg.content === '.positions') {
@@ -83,10 +84,29 @@ const setBot = async () => {
     if (msg.content.startsWith('.trigger')) {
       const testTicker = msg.content.toUpperCase();
       console.log(testTicker);
-      const ticker = testTicker.slice(6);
+      const ticker = testTicker.slice(9);
       console.log(ticker);
 
-      // const fetchTriggers = await getTriggerOrders()
+      const fetchTriggerOrders = async (ticker) => {
+        try {
+          const openTriggersData = await getTriggerOrders(ftx, ticker);
+
+          let str = '';
+          openTriggersData.map((p) => {
+            str += `**Market**: ${p.market}\n**Status**: ${p.status}\n**OrderType**: ${p.orderType}\n**Type**: ${p.type}\n**Size**: ${p.size}\n**TriggerPrice** : ${p.triggerPrice}\n**Estimated Return**: ${p.estimatedReturn} \n\n`;
+          });
+
+          if (str) {
+            msg.channel.send(str);
+          } else {
+            msg.channel.send(`No Open Orders for ${ticker}`)
+          }
+        } catch (error) {
+          console.log('API Error', error)
+        }
+      }
+
+      fetchTriggerOrders(ticker)
     };
 
     // OPEN ORDERS
@@ -96,7 +116,6 @@ const setBot = async () => {
       const ticker = input.slice(6); // removes `.open ` 
       console.log(ticker)
 
-      // doest show Trigger Orders
       const fetchOpenOrders = async (ticker) => {
         try {
           const openOrdersData = await getOpenOrders(ftx, ticker);
@@ -105,7 +124,7 @@ const setBot = async () => {
           openOrdersData.map((p) => {
             str += `${p.market}\n${p.type}\n${p.status}\n${p.price}\n${p.size}\n${p.remainingSize} \n\n`;
           });
-          msg.channel.send(str);
+
           if (str) {
             msg.channel.send(str);
           } else {

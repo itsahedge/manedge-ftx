@@ -53,8 +53,34 @@ export const getOpenPositions = async (ftx) => {
   return openPositions;
 };
 
-export const getTriggerOrders = async () => {
-  console.log('test')
+export const getTriggerOrders = async (ftx, ticker) => {
+  const data = await ftx.request({
+    method: 'GET',
+    path: `/conditional_orders?market=${ticker}`, // accept ticker argument market={ticker}
+  });
+
+  const { result } = data;
+
+  const openTriggers = result.flatMap((o) => {
+    console.log(o)
+    if (o.status === 'open') {
+      return [{
+        id: o.id,
+        market: o.market,
+        size: o.size,
+        status: o.status,
+        type: o.type, // market/limit
+        orderType: o.orderType,
+        triggerPrice: o.triggerPrice,
+        triggeredAt: o.triggeredAt,
+        estimatedReturn: o.triggerPrice * o.size
+      }]
+    } else {
+      console.log('didnt work')
+    }
+  });
+
+  return openTriggers
 }
 
 // pass in a ticker argument, to which you pass to createDraft
@@ -65,6 +91,8 @@ export const getOpenOrders = async (ftx, ticker) => {
   });
 
   const { result } = data;
+
+  console.log(result)
 
   const openOrders = result.flatMap((o) =>
     o.status === 'open'
