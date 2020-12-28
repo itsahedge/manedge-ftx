@@ -42,8 +42,8 @@ export const getOpenPositions = async (ftx) => {
             netSize: o.netSize,
             unrealizedPnl: o.unrealizedPnl, //PnL (unrealized)
             realizedPnl: o.realizedPnl, //PnL (unrealized)
-            recentBreakEvenPrice: o.recentBreakEvenPrice,
-            recentAverageOpenPrice: o.recentAverageOpenPrice,
+            recentBreakEvenPrice: Number(o.recentBreakEvenPrice).toFixed(4),
+            recentAverageOpenPrice: Number(o.recentAverageOpenPrice).toFixed(4),
             recentPnl: o.recentPnl,
           },
         ]

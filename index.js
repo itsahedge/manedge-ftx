@@ -14,9 +14,12 @@ import {
 const client = new Discord.Client();
 const TOKEN = process.env.TOKEN;
 client.login(TOKEN);
+
+
 client.on('ready', () => {
   setBot();
 });
+
 client.on('rateLimit', (info) => {
   console.log(
     `Rate limit hit ${
@@ -37,7 +40,12 @@ client.on('rateLimit', (info) => {
 
 const setBot = async () => {
   console.info(`Logged in as ${client.user.tag}!`);
+
   client.on('message', (msg) => {
+    let longEmoji = msg.guild.emojis.cache.find(emoji => emoji.name === 'long');
+    let shortEmoji = msg.guild.emojis.cache.find(emoji => emoji.name === 'short');
+
+
     // ACCOUNT DETAILS
     if (msg.content === '.account') {
       const fetchAccount = async () => {
@@ -61,13 +69,20 @@ const setBot = async () => {
       fetchAccount();
     };
 
-    // OPEN POSITIONS
+    // GET ALL OPEN POSITIONS
     if (msg.content === '.positions') {
       const fetchPositions = async () => {
         const positionsData = await getOpenPositions(ftx);
         let str = '';
         positionsData.map((p) => {
-          str += `[${p.side}]: ${p.ticker}\nNet Size: ${p.netSize}\nCost($): ${p.costUsd}\nAvg Entry: ${p.recentAverageOpenPrice}\nBreak Even: ${p.recentBreakEvenPrice}\nuPnL: ${p.recentPnl}\n \n\n`;
+          const splitAsset = p.ticker.split('-');
+          const asset = splitAsset[0];
+
+          if (p.side === "LONG") {  
+            str += `**${longEmoji} ${p.ticker}**\n**Net Size**: ${p.netSize} ${asset}\n**Cost**: $${p.costUsd}\n**Avg Entry**: ${p.recentAverageOpenPrice} | **Break Even**: ${p.recentBreakEvenPrice}\n**Mark**: ${p.entryPrice}\n**uPnL**: ${p.recentPnl}\n\n`;
+          } else {
+            str += `${shortEmoji} ${p.ticker}\nNet Size: ${p.netSize} ${asset}\nCost($): ${p.costUsd}\nAvg Entry: ${p.recentAverageOpenPrice} | Break Even: ${p.recentBreakEvenPrice}\nuPnL: ${p.recentPnl}\n\n`;
+          }
         });
 
         if (str) {
@@ -81,7 +96,7 @@ const setBot = async () => {
     };
 
     // TRIGGER ORDERS (TP/STOP)
-    if (msg.content.startsWith('.trigger')) {
+    if (msg.content.startsWith('.trigger')) { // .trigger SUSHI-PERP
       const testTicker = msg.content.toUpperCase();
       console.log(testTicker);
       const ticker = testTicker.slice(9);
