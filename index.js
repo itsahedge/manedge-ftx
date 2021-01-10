@@ -48,7 +48,10 @@ const setBot = async () => {
     let longEmoji = msg.guild.emojis.cache.find(emoji => emoji.name === 'long');
     let shortEmoji = msg.guild.emojis.cache.find(emoji => emoji.name === 'short');
 
+    // ===================================================== 
     // ACCOUNT DETAILS
+    // .account 
+    // ===================================================== 
     if (msg.content === '.account') {
       const fetchAccount = async () => {
         try {
@@ -78,7 +81,10 @@ const setBot = async () => {
       fetchAccount();
     };
 
+    // ===================================================== 
     // GET ALL OPEN POSITIONS
+    // .positions 
+    // ===================================================== 
     if (msg.content === '.positions') {
       const fetchPositions = async () => {
         const positionsData = await getOpenPositions(ftx);
@@ -103,8 +109,10 @@ const setBot = async () => {
       fetchPositions();
     };
 
+    // ===================================================== 
     // GET TRIGGER ORDERS (TP/STOP)
-    // .get-trigger [ticker]
+    // .get-trigger btc-perp
+    // ===================================================== 
     if (msg.content.startsWith('.trigger')) { 
       const inputStr = msg.content.toUpperCase();
       const inputArr = inputStr.split(' ')
@@ -130,13 +138,14 @@ const setBot = async () => {
       fetchTriggerOrders(ticker)
     };
 
-    // GET OPEN ORDERS 
-    // .orders rune-perp
+    // ===================================================== 
+    // GET OPEN ORDERS
+    // .orders btc-perp
+    // ===================================================== 
     if (msg.content.toLowerCase().startsWith('.orders')) {
       const inputStr = msg.content.toUpperCase();
       const parsed = _.split(inputStr, ' ', 2); // parsed Array
       const ticker = parsed[1]; // rune-perp
-      console.log(inputStr)
       const fetchOpenOrders = async (ticker) => {
         try {
           const openOrdersData = await getOpenOrders(ftx, ticker);
@@ -161,13 +170,10 @@ const setBot = async () => {
       fetchOpenOrders(ticker);
     }
 
-    
-    // ================================ 
-    // ======== PLACING ORDERS ========
-    // ================================ 
-
+    // ===================================================== 
     // PLACE MARKET ORDERS
-    // cmd: .market sell SNX-PERP 10
+    // .market buy snx-perp 10
+    // ===================================================== 
     if (msg.content.toLowerCase().startsWith('.market')) {
       const inputStr = msg.content;
       const parsed = _.split(inputStr, ' ', 5); // parsed Array
@@ -204,8 +210,10 @@ const setBot = async () => {
       placeMarketOrder();
     }
     
+    // ===================================================== 
     // PLACE LIMIT ORDERS
-    // cmd: .limit sell RUNE-PERP 1 3
+    // .limit sell RUNE-PERP 1 3
+    // ===================================================== 
     if (msg.content.toLowerCase().startsWith('.limit')) {
       const inputStr = msg.content;
       const parsed = _.split(inputStr, ' ', 5); // parsed Array
@@ -249,12 +257,10 @@ const setBot = async () => {
       }
     }
 
-    // ================================ 
-    // ======== PLACING TRIGGER ORDERS 
-    // ================================ 
-
-    // PLACE TRIGGER ORDERS (STOPS, TAKE PROFITS)
-    // .trigger sell RUNE-PERP 1 0.43 
+    // =====================================================
+    // PLACE TRIGGER ORDERS (STOPS)
+    // .sl sell RUNE-PERP 1 0.43 
+    // =====================================================
     if (msg.content.toLowerCase().startsWith('.sl')) {
       const inputStr = msg.content;
       const parsed = _.split(inputStr, ' ', 5); // parsed Array
@@ -298,10 +304,10 @@ const setBot = async () => {
       }
     }
 
-
-    // CANCEL ORDERS
-    // cancel all rune-perp orders
-    // cmd: .cancel rune-perp orders
+    // =====================================================
+    // CANCEL ALL ORDERS (TRIGGERS AND LIMITS)
+    // .del-all rune-perp
+    // =====================================================
     if (msg.content.toLowerCase().startsWith('.del-all')) {
       const inputStr = msg.content;
 
@@ -326,6 +332,10 @@ const setBot = async () => {
       cancelOrders(ticker)
     }
 
+    // =====================================================
+    // CANCEL ORDER BY ID 
+    // .cancel 21589500506
+    // =====================================================
     if (msg.content.toLowerCase().startsWith('.cancel')) {
       const inputStr = msg.content;
 

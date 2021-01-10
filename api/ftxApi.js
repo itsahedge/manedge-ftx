@@ -145,7 +145,6 @@ export const getOpenOrders = async (ftx, ticker) => {
   });
 
   const { result } = data;
-
   console.log(result)
 
   const openOrders = result.flatMap((o) =>
