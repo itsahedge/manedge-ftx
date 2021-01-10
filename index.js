@@ -9,6 +9,8 @@ import {
   getOpenPositions,
   getOpenOrders,
   getTriggerOrders,
+  cancelAllOrders,
+  placeTriggerOrders
 } from './api/ftxApi';
 
 const client = new Discord.Client();
@@ -45,6 +47,9 @@ const setBot = async () => {
     let longEmoji = msg.guild.emojis.cache.find(emoji => emoji.name === 'long');
     let shortEmoji = msg.guild.emojis.cache.find(emoji => emoji.name === 'short');
 
+    // ================================ 
+    // ======== FETCHING ==============
+    // ================================ 
 
     // ACCOUNT DETAILS
     if (msg.content === '.account') {
@@ -59,7 +64,7 @@ const setBot = async () => {
           } = accountData;
 
           msg.channel.send(`
-            **Total Account Value**: ${totalAccountValue}\n**Total Position Size**: ${totalPositionSize}\n**Collateral**: ${collateral}\n**Free Collateral**: ${freeCollateral}\n
+            **💰: $${totalAccountValue}**\n**Total Position Size**: ${totalPositionSize}\n**Collateral**: ${collateral}\n**Free Collateral**: ${freeCollateral}\n
           `);
         } catch (error) {
           console.log("API Error", error)
@@ -81,7 +86,7 @@ const setBot = async () => {
           if (p.side === "LONG") {  
             str += `**${longEmoji} ${p.ticker}**\n**Net Size**: ${p.netSize} ${asset}\n**Cost**: $${p.costUsd}\n**Avg Entry**: ${p.recentAverageOpenPrice} | **Break Even**: ${p.recentBreakEvenPrice}\n**Mark**: ${p.entryPrice}\n**uPnL**: ${p.recentPnl}\n\n`;
           } else {
-            str += `${shortEmoji} ${p.ticker}\nNet Size: ${p.netSize} ${asset}\nCost($): ${p.costUsd}\nAvg Entry: ${p.recentAverageOpenPrice} | Break Even: ${p.recentBreakEvenPrice}\nuPnL: ${p.recentPnl}\n\n`;
+            str += `**${shortEmoji} ${p.ticker}**\n**Net Size**: ${p.netSize} ${asset}\n**Cost**: $${p.costUsd}\n**Avg Entry**: ${p.recentAverageOpenPrice} | **Break Even**: ${p.recentBreakEvenPrice}\n**Mark**: ${p.entryPrice}\n**uPnL**: ${p.recentPnl}\n\n`;
           }
         });
 
@@ -91,40 +96,37 @@ const setBot = async () => {
           msg.channel.send("No open positions");
         }
       };
-
       fetchPositions();
     };
 
-    // TRIGGER ORDERS (TP/STOP)
-    if (msg.content.startsWith('.trigger')) { // .trigger SUSHI-PERP
-      const testTicker = msg.content.toUpperCase();
-      console.log(testTicker);
-      const ticker = testTicker.slice(9);
-      console.log(ticker);
-
+    // GET TRIGGER ORDERS (TP/STOP)
+    // .get-trigger [ticker]
+    if (msg.content.startsWith('.trigger')) { 
+      const inputStr = msg.content.toUpperCase();
+      const inputArr = inputStr.split(' ')
+      const ticker = inputArr[1]
       const fetchTriggerOrders = async (ticker) => {
         try {
           const openTriggersData = await getTriggerOrders(ftx, ticker);
 
           let str = '';
           openTriggersData.map((p) => {
-            str += `**Market**: ${p.market}\n**Status**: ${p.status}\n**OrderType**: ${p.orderType}\n**Type**: ${p.type}\n**Size**: ${p.size}\n**TriggerPrice** : ${p.triggerPrice}\n**Estimated Return**: ${p.estimatedReturn} \n\n`;
+            str += `**${p.market}**\n**Status**: ${p.status}\n**OrderType**: ${p.orderType}\n**Type**: ${p.type}\n**Size**: ${p.size}\n**TriggerPrice** : ${p.triggerPrice}\n**Estimated Return**: ${p.estimatedReturn}\n**Id: **${p.id} \n\n`;
           });
 
           if (str) {
             msg.channel.send(str);
           } else {
-            msg.channel.send(`No Open Orders for ${ticker}`)
+            msg.channel.send(`No Trigger Orders for ${ticker}`)
           }
         } catch (error) {
           console.log('API Error', error)
         }
       }
-
       fetchTriggerOrders(ticker)
     };
 
-    // OPEN ORDERS
+    // GET OPEN ORDERS 
     if (msg.content.toLowerCase().startsWith('.open')) {
       const input = msg.content.toUpperCase();
       console.log(input);
@@ -137,11 +139,11 @@ const setBot = async () => {
 
           let str = '';
           openOrdersData.map((p) => {
-            str += `${p.market}\n${p.type}\n${p.status}\n${p.price}\n${p.size}\n${p.remainingSize} \n\n`;
+            str += `**Pair: **${p.market}\n**${p.type}** (${p.status})\n**Side: **${p.side}\n**Price: **$${p.price}\n**Size: **${p.size} ${p.market} | remaining: ${p.remainingSize}\n**Id: ** ${p.id} \n\n`;
           });
 
           if (str) {
-            msg.channel.send(str);
+            msg.channel.send(str);            
           } else {
             msg.channel.send(`No Open Orders for ${ticker}`)
           }
@@ -151,83 +153,176 @@ const setBot = async () => {
       };
       fetchOpenOrders(ticker);
     }
-    // CASES:
+
+    
+    // ================================ 
+    // ======== PLACING ORDERS ========
+    // ================================ 
+
+    // PLACE MARKET ORDERS
+    // cmd: .market SNX-PERP buy 10
+    if (msg.content.toLowerCase().startsWith('.market')) {
+      const inputStr = msg.content;
+      console.log(inputStr)
+      const parsedInput = /^\.market (?<market>.*) (?<side>.*) (?<size>[0-9.]+)/.exec(
+        inputStr
+      ).groups;
+
+      const { market, size, type, side } = parsedInput;
+      const newSize = parseFloat(size);
+
+      const placeMarketOrder = async () => {
+        try {
+          const resp = await ftx.request({
+            method: 'POST',
+            path: '/orders',
+            data: {
+              market: market,
+              side: side,
+              price: null, //send null for market orders
+              type: type,
+              size: newSize,
+            },
+          });
+          const { result } = resp;
+          console.log(result);
+          // return result;
+          msg.channel.send("successfully market order placed")
+        } catch (error) {
+          console.error(error)
+          msg.channel.send("format not correct")
+        }
+      };
+      placeMarketOrder();
+    }
+    
+    // PLACE LIMIT ORDERS
+    // cmd: .limit sell RUNE-PERP 1 3
+    if (msg.content.toLowerCase().startsWith('.limit')) {
+      const inputStr = msg.content;
+      const parsed = _.split(inputStr, ' ', 5); // parsed Array
+
+      const side = parsed[1]; // buy or sell
+      const pair = parsed[2]; // rune-perp
+      const size = parsed[3]; // 1 RUNE
+      const price = parsed[4] // price (if not provided to null for market?)
+      const newSize = parseFloat(size);
+      const newPrice = parseFloat(price);
+      
+      if (parsed.length < 5) {
+        msg.channel.send('Incorrect command format.');
+        return null
+      } else {
+        const data = {
+          market: pair,
+          side: side, // buy or sell
+          price: newPrice, // formatted
+          type: 'limit',
+          size: newSize, // foramtted
+        };
+        const placeLimitOrder = async () => { 
+          try {
+          const resp = await ftx.request({
+            method: 'POST',
+            path: '/orders',
+            data: data,
+          });
+          const { result } = resp; 
+          if (result) {
+            msg.channel.send('Placed limit order');
+          } else {
+            msg.channel.send(`Something went wrong.`)
+          }
+          } catch (error) {
+            console.log(error)
+          }
+        };
+        placeLimitOrder();
+      }
+    }
+
+    // ================================ 
+    // ======== PLACING TRIGGER ORDERS 
+    // ================================ 
+
+    // PLACE TRIGGER ORDERS (STOPS, TAKE PROFITS)
+    // .trigger sell RUNE-PERP 1 0.43 
+    if (msg.content.toLowerCase().startsWith('.sl')) {
+      const inputStr = msg.content;
+      const parsed = _.split(inputStr, ' ', 5); // parsed Array
+
+      const side = parsed[1]; 
+      const pair = parsed[2]; 
+      const size = parsed[3]; 
+      const triggerPrice = parsed[4] // price (if not provided to null for market?)
+      const newSize = parseFloat(size);
+      const trigger = parseFloat(triggerPrice);
+    
+      if (parsed.length < 5) {
+        msg.channel.send('Incorrect command format.');
+        return null
+      } else {
+        const data = {
+          market: pair,
+          side: side, // buy or sell
+          triggerPrice: trigger, // formatted
+          type: 'stop', // stop, trailingStop or takeProfit; default is stop
+          size: newSize, // foramtted
+        };
+        const placeTriggerOrder = async () => { 
+          try {
+            const resp = await ftx.request({
+              method: 'POST',
+              path: '/conditional_orders',
+              data: data,
+            });
+            const { result } = resp; 
+
+            if (result) {
+              msg.channel.send('Placed stop market trigger order');
+            }
+          } catch (error) {
+            console.log(error)
+            msg.channel.send(`Error was caught. Check logs.`)
+          }
+        };
+        placeTriggerOrder();
+      }
+    }
+
+
+    // CANCEL ORDERS
+    // cancel all rune-perp orders
+    // cmd: .cancel rune-perp orders
+    if (msg.content.toLowerCase().startsWith('.cancel')) {
+      const inputStr = msg.content;
+
+      const parsed = _.split(inputStr, ' ', 2); // parsed Array
+      const ticker = parsed[1];
+      console.log(ticker)
+    
+      const cancelOrders = async (ticker) => {
+        try {
+          const orders = await cancelAllOrders(ftx, ticker);
+          console.log(orders)
+
+          if (orders) {
+            msg.channel.send("successs");
+          } else {
+            msg.channel.send(`No Trigger Orders for ${ticker}`)
+          }
+        } catch (error) {
+          console.log('API Error', error)
+        }
+      }
+      cancelOrders(ticker)
+    }
+    
+    
+
+    // TODO:
     // Market close specified amount of size only
     // Market close full position
     // Market close half position
-    if (msg.content.toLowerCase().startsWith('.order-market')) {
-      // .close RUNE-PERP side price market size
-
-      // if order is MARKET, then price should be null
-      const inputStr = msg.content;
-      const parsedInput = /^\.order (?<market>.*) (?<size>\d+) (?<type>.*) (?<side>.*)/.exec(
-        inputStr
-      ).groups;
-
-      // what to do with orderObject?
-      const { market, size, type, side } = parsedInput;
-
-      const fetchPlaceOrders = async () => {
-        const resp = await ftx.request({
-          method: 'POST',
-          path: '/orders',
-          data: {
-            market: market,
-            side: side,
-            price: null, //send null for market orders
-            type: type,
-            size: size,
-          },
-        });
-        const { result } = resp;
-        console.log(result);
-        return result;
-      };
-      fetchPlaceOrders();
-    }
-    if (msg.content.toLowerCase().startsWith('.test')) {
-      // .close RUNE-PERP side price market size
-
-      // if order is MARKET, then price should be null
-      // const inputStr = msg.content;
-      // const parsedInput = /^\.order-limit (?<market>.*) (?<side>.*) (?<size>\d+) (?<price>\d+) /.exec(
-      //   inputStr
-      // ).groups;
-
-      // const inputStr2 = '.order RUNE-PERP buy 24 0.1';
-      const inputStr = msg.content;
-      // found issue: price is not being parsed correctly.
-      const parsedInput = /^\.test (?<market>.*) (?<side>.*) (?<size>[0-9.]+) (?<price>[0-9.]+)/.exec(
-        inputStr
-      ).groups;
-
-      // take the string, split it
-
-      // .order RUNE-PERP buy 24 0.1
-      const { market, side, size, price } = parsedInput;
-      const newSize = parseFloat(size);
-      const newPrice = parseFloat(price);
-
-      const data = {
-        market: market,
-        side: side,
-        price: newPrice, //price not able to pick up newPrice??
-        type: 'limit',
-        size: newSize,
-      };
-
-      const fetchPlaceOrders = async () => {
-        const resp = await ftx.request({
-          method: 'POST',
-          path: '/orders',
-          data: data,
-        });
-        console.log(data);
-        const { result } = resp;
-        console.log(result);
-        return result;
-      };
-      fetchPlaceOrders();
-    }
   });
 };

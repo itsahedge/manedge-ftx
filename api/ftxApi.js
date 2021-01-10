@@ -83,6 +83,45 @@ export const getTriggerOrders = async (ftx, ticker) => {
   return openTriggers
 }
 
+export const cancelAllOrders = async (ftx, ticker) => {
+  const data = await ftx.request({
+    method: 'DELETE',
+    path: `/orders?market=${ticker}`, // accept ticker argument market={ticker}
+  });
+
+  const { result } = data;
+  console.log("result: ", result)
+
+  return {
+    message: `${result}`
+  }
+}
+
+export const placeTriggerOrders = async (ftx, ticker) => {
+  const data = await ftx.request({
+    method: 'POST',
+    path: `/conditional_orders`, // accept ticker argument market={ticker}
+  });
+
+  const { result } = data;
+
+  const triggers = result.flatMap((o) => {
+    console.log(o)
+    if (o.status === 'open') {
+      return [{
+        market: o.market,
+        side: o.side,
+        size: o.size,
+        type: o.type
+      }]
+    } else {
+      console.log('didnt work')
+    }
+  });
+
+  return triggers
+}
+
 // pass in a ticker argument, to which you pass to createDraft
 export const getOpenOrders = async (ftx, ticker) => {
   const data = await ftx.request({
