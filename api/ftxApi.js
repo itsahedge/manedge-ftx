@@ -42,8 +42,8 @@ export const getOpenPositions = async (ftx) => {
             netSize: o.netSize,
             unrealizedPnl: o.unrealizedPnl, //PnL (unrealized)
             realizedPnl: o.realizedPnl, //PnL (unrealized)
-            recentBreakEvenPrice: o.recentBreakEvenPrice,
-            recentAverageOpenPrice: o.recentAverageOpenPrice,
+            recentBreakEvenPrice: Number(o.recentBreakEvenPrice).toFixed(4),
+            recentAverageOpenPrice: Number(o.recentAverageOpenPrice).toFixed(4),
             recentPnl: o.recentPnl,
           },
         ]
@@ -81,6 +81,45 @@ export const getTriggerOrders = async (ftx, ticker) => {
   });
 
   return openTriggers
+}
+
+export const cancelAllOrders = async (ftx, ticker) => {
+  const data = await ftx.request({
+    method: 'DELETE',
+    path: `/orders?market=${ticker}`, // accept ticker argument market={ticker}
+  });
+
+  const { result } = data;
+  console.log("result: ", result)
+
+  return {
+    message: `${result}`
+  }
+}
+
+export const placeTriggerOrders = async (ftx, ticker) => {
+  const data = await ftx.request({
+    method: 'POST',
+    path: `/conditional_orders`, // accept ticker argument market={ticker}
+  });
+
+  const { result } = data;
+
+  const triggers = result.flatMap((o) => {
+    console.log(o)
+    if (o.status === 'open') {
+      return [{
+        market: o.market,
+        side: o.side,
+        size: o.size,
+        type: o.type
+      }]
+    } else {
+      console.log('didnt work')
+    }
+  });
+
+  return triggers
 }
 
 // pass in a ticker argument, to which you pass to createDraft
