@@ -99,6 +99,19 @@ export const cancelAllOrders = async (ftx, ticker) => {
   }
 }
 
+export const cancelOrderById = async (ftx, id) => {
+  const data = await ftx.request({
+    method: 'DELETE',
+    path: `/orders?order_id=${id}`, // accept ticker argument market={ticker}
+  });
+
+  const { result } = data;
+
+  return {
+    message: `${result}`
+  }
+}
+
 export const placeTriggerOrders = async (ftx, ticker) => {
   const data = await ftx.request({
     method: 'POST',
