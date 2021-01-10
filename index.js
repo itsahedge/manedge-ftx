@@ -10,7 +10,8 @@ import {
   getOpenOrders,
   getTriggerOrders,
   cancelAllOrders,
-  placeTriggerOrders
+  placeTriggerOrders,
+  cancelOrderById
 } from './api/ftxApi';
 
 const client = new Discord.Client();
@@ -141,12 +142,15 @@ const setBot = async () => {
           const openOrdersData = await getOpenOrders(ftx, ticker);
 
           let str = '';
+          let id = ''
           openOrdersData.map((p) => {
-            str += `**Pair: **${p.market}\n**${p.type}** (${p.status})\n**Side: **${p.side}\n**Price: **$${p.price}\n**Size: **${p.size} ${p.market} | remaining: ${p.remainingSize}\n**Id: ** ${p.id} \n\n`;
+            str += `**Pair: **${p.market}\n**${p.type}** (${p.status})\n**Side: **${p.side}\n**Price: **$${p.price}\n**Size: **${p.size} ${p.market} | remaining: ${p.remainingSize} \n\n`;
+            id += `${p.id}`
           });
 
           if (str) {
-            msg.channel.send(str);            
+            msg.channel.send(id);      
+            msg.channel.send(str);      
           } else {
             msg.channel.send(`No Open Orders for ${ticker}`)
           }
@@ -298,7 +302,7 @@ const setBot = async () => {
     // CANCEL ORDERS
     // cancel all rune-perp orders
     // cmd: .cancel rune-perp orders
-    if (msg.content.toLowerCase().startsWith('.cancel')) {
+    if (msg.content.toLowerCase().startsWith('.del-all')) {
       const inputStr = msg.content;
 
       const parsed = _.split(inputStr, ' ', 2); // parsed Array
@@ -311,7 +315,7 @@ const setBot = async () => {
           console.log(orders)
 
           if (orders) {
-            msg.channel.send("successs");
+            msg.channel.send(`Cancelled all Open Orders for ${ticker}`);
           } else {
             msg.channel.send(`No Trigger Orders for ${ticker}`)
           }
@@ -320,6 +324,29 @@ const setBot = async () => {
         }
       }
       cancelOrders(ticker)
+    }
+
+    if (msg.content.toLowerCase().startsWith('.cancel')) {
+      const inputStr = msg.content;
+
+      const parsed = _.split(inputStr, ' ', 2); // parsed Array
+      const id = parsed[1];
+    
+      const cancelOrder = async (id) => {
+        try {
+          const orders = await cancelOrderById(ftx, id);
+          console.log(orders)
+
+          if (orders) {
+            msg.channel.send(`${orders.message}`);
+          } else {
+            msg.channel.send(`No Trigger Orders for ${ticker}`)
+          }
+        } catch (error) {
+          console.log('API Error', error)
+        }
+      }
+      cancelOrder(id)
     }
     
     
