@@ -130,12 +130,12 @@ const setBot = async () => {
     };
 
     // GET OPEN ORDERS 
-    if (msg.content.toLowerCase().startsWith('.open')) {
-      const input = msg.content.toUpperCase();
-      console.log(input);
-      const ticker = input.slice(6); // removes `.open ` 
-      console.log(ticker)
-
+    // .orders rune-perp
+    if (msg.content.toLowerCase().startsWith('.orders')) {
+      const inputStr = msg.content.toUpperCase();
+      const parsed = _.split(inputStr, ' ', 2); // parsed Array
+      const ticker = parsed[1]; // rune-perp
+      console.log(inputStr)
       const fetchOpenOrders = async (ticker) => {
         try {
           const openOrdersData = await getOpenOrders(ftx, ticker);
@@ -163,27 +163,28 @@ const setBot = async () => {
     // ================================ 
 
     // PLACE MARKET ORDERS
-    // cmd: .market SNX-PERP buy 10
+    // cmd: .market sell SNX-PERP 10
     if (msg.content.toLowerCase().startsWith('.market')) {
       const inputStr = msg.content;
-      console.log(inputStr)
-      const parsedInput = /^\.market (?<market>.*) (?<side>.*) (?<size>[0-9.]+)/.exec(
-        inputStr
-      ).groups;
+      const parsed = _.split(inputStr, ' ', 5); // parsed Array
 
-      const { market, size, type, side } = parsedInput;
+      const side = parsed[1]; // buy or sell
+      const pair = parsed[2]; // rune-perp
+      const size = parsed[3]; // 1 RUNE
       const newSize = parseFloat(size);
 
+      console.log(inputStr)
+      
       const placeMarketOrder = async () => {
         try {
           const resp = await ftx.request({
             method: 'POST',
             path: '/orders',
             data: {
-              market: market,
+              market: pair,
               side: side,
               price: null, //send null for market orders
-              type: type,
+              type: 'market',
               size: newSize,
             },
           });
