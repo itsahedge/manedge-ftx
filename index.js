@@ -47,10 +47,6 @@ const setBot = async () => {
     let longEmoji = msg.guild.emojis.cache.find(emoji => emoji.name === 'long');
     let shortEmoji = msg.guild.emojis.cache.find(emoji => emoji.name === 'short');
 
-    // ================================ 
-    // ======== FETCHING ==============
-    // ================================ 
-
     // ACCOUNT DETAILS
     if (msg.content === '.account') {
       const fetchAccount = async () => {
@@ -61,10 +57,17 @@ const setBot = async () => {
             totalPositionSize,
             collateral,
             freeCollateral,
+            leverage
           } = accountData;
+          
+          const formattedTotalAccountValue = Number(totalAccountValue).toFixed(2)
+          const formattedTotalCollateral = Number(collateral).toFixed(2)
+          const formattedFreeCollateral = Number(freeCollateral).toFixed(2)
 
+          // total position size / collateral = current leverge used
+          const totalLeverage = Number(totalPositionSize/formattedTotalCollateral).toFixed(2);
           msg.channel.send(`
-            **💰: $${totalAccountValue}**\n**Total Position Size**: ${totalPositionSize}\n**Collateral**: ${collateral}\n**Free Collateral**: ${freeCollateral}\n
+            **💰: $${formattedTotalAccountValue}**\n**Total Collateral**: ${formattedTotalCollateral}\n**Total Position Size**: ${totalPositionSize}\n**Free Collateral**: ${formattedFreeCollateral}\n**Leverage Used: **${totalLeverage}x\n
           `);
         } catch (error) {
           console.log("API Error", error)
