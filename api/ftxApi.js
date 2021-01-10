@@ -11,6 +11,7 @@ export const getAccountDetail = async (ftx) => {
       totalPositionSize,
       collateral,
       freeCollateral,
+      leverage
     },
   } = data;
 
@@ -20,6 +21,7 @@ export const getAccountDetail = async (ftx) => {
     totalPositionSize,
     collateral,
     freeCollateral,
+    leverage
   };
 };
 
