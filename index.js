@@ -40,6 +40,9 @@ client.on('rateLimit', (info) => {
 // market-buy X amount for ABC market
 // market-sell X amount for ABC market
 // market-sell to close current open position in full and half size
+// Market close specified amount of size only
+// Market close full position
+// Market close half position
 
 const setBot = async () => {
   console.info(`Logged in as ${client.user.tag}!`);
@@ -358,12 +361,6 @@ const setBot = async () => {
       }
       cancelOrder(id)
     }
-    
-    
-
-    // TODO:
-    // Market close specified amount of size only
-    // Market close full position
-    // Market close half position
+  
   });
 };
