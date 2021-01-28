@@ -2,6 +2,7 @@ import _ from 'lodash';
 const Discord = require('discord.js');
 
 import { ftx } from "./constants"
+import { formatter } from "./formatter"
 require('dotenv').config();
 
 import {
@@ -67,14 +68,19 @@ const setBot = async () => {
             leverage
           } = accountData;
           
-          const formattedTotalAccountValue = Number(totalAccountValue).toFixed(2)
-          const formattedTotalCollateral = Number(collateral).toFixed(2)
-          const formattedFreeCollateral = Number(freeCollateral).toFixed(2)
+          // const formattedTotalAccountValue = Number(totalAccountValue).toFixed(2)
+          const formattedTotalAccountValue = formatter.format(totalAccountValue)
+
+          const formattedTotalPositionSize = formatter.format(totalPositionSize)
+
+          const formattedTotalCollateral = formatter.format(collateral)
+          // const formattedFreeCollateral = Number(freeCollateral).toFixed(2)
+          const formattedFreeCollateral = formatter.format(freeCollateral)
 
           // total position size / collateral = current leverge used
-          const totalLeverage = Number(totalPositionSize/formattedTotalCollateral).toFixed(2);
+          const totalLeverage = Number(totalPositionSize/Number(collateral).toFixed(2)).toFixed(2);
           msg.channel.send(`
-            **💰: $${formattedTotalAccountValue}**\n**Total Collateral**: ${formattedTotalCollateral}\n**Total Position Size**: ${totalPositionSize}\n**Free Collateral**: ${formattedFreeCollateral}\n**Leverage Used: **${totalLeverage}x\n
+            **💰: ${formattedTotalAccountValue}**\n**Total Collateral**: ${formattedTotalCollateral}\n**Total Position Size**: ${formattedTotalPositionSize}\n**Free Collateral**: ${formattedFreeCollateral}\n**Leverage Used: **${totalLeverage}x\n
           `);
         } catch (error) {
           console.log("API Error", error)
@@ -97,9 +103,11 @@ const setBot = async () => {
           const asset = splitAsset[0];
 
           if (p.side === "LONG") {  
-            str += `**${longEmoji} ${p.ticker}**\n**Net Size**: ${p.netSize} ${asset}\n**Cost**: $${p.costUsd}\n**Avg Entry**: ${p.recentAverageOpenPrice} | **Break Even**: ${p.recentBreakEvenPrice}\n**Mark**: ${p.entryPrice}\n**uPnL**: ${p.recentPnl}\n\n`;
+            const formattedCost = formatter.format(p.costUsd)
+            str += `**${longEmoji} ${p.ticker}**\n**Net Size**: ${p.netSize} ${asset}\n**Cost**: ${formattedCost}\n**Avg Entry**: ${p.recentAverageOpenPrice} | **B/E**: ${p.recentBreakEvenPrice}\n**Mark**: ${p.entryPrice}\n**uPnL**: ${p.recentPnl}\n\n`;
           } else {
-            str += `**${shortEmoji} ${p.ticker}**\n**Net Size**: ${p.netSize} ${asset}\n**Cost**: $${p.costUsd}\n**Avg Entry**: ${p.recentAverageOpenPrice} | **Break Even**: ${p.recentBreakEvenPrice}\n**Mark**: ${p.entryPrice}\n**uPnL**: ${p.recentPnl}\n\n`;
+            const formattedCost = formatter.format(p.costUsd)
+            str += `**${shortEmoji} ${p.ticker}**\n**Net Size**: ${p.netSize} ${asset}\n**Cost**: ${formattedCost}\n**Avg Entry**: ${p.recentAverageOpenPrice} | **B/E**: ${p.recentBreakEvenPrice}\n**Mark**: ${p.entryPrice}\n**uPnL**: ${p.recentPnl}\n\n`;
           }
         });
 
@@ -181,12 +189,11 @@ const setBot = async () => {
       const inputStr = msg.content;
       const parsed = _.split(inputStr, ' ', 5); // parsed Array
 
-      const side = parsed[1]; // buy or sell
+      const sides = parsed[1]; // buy or sell
       const pair = parsed[2]; // rune-perp
       const size = parsed[3]; // 1 RUNE
       const newSize = parseFloat(size);
 
-      console.log(inputStr)
       
       const placeMarketOrder = async () => {
         try {
@@ -195,7 +202,7 @@ const setBot = async () => {
             path: '/orders',
             data: {
               market: pair,
-              side: side,
+              side: sides,
               price: null, //send null for market orders
               type: 'market',
               size: newSize,
@@ -203,8 +210,9 @@ const setBot = async () => {
           });
           const { result } = resp;
           console.log(result);
+          const { market, side, size, type } = result;
           // return result;
-          msg.channel.send("successfully market order placed")
+          msg.channel.send(`${type}: ${side.toUpperCase()} ${market} ${size} `)
         } catch (error) {
           console.error(error)
           msg.channel.send("format not correct")
@@ -241,17 +249,20 @@ const setBot = async () => {
         };
         const placeLimitOrder = async () => { 
           try {
-          const resp = await ftx.request({
-            method: 'POST',
-            path: '/orders',
-            data: data,
-          });
-          const { result } = resp; 
-          if (result) {
-            msg.channel.send('Placed limit order');
-          } else {
-            msg.channel.send(`Something went wrong.`)
-          }
+            const resp = await ftx.request({
+              method: 'POST',
+              path: '/orders',
+              data: data,
+            });
+            
+            const { result } = resp; 
+
+            if (result) {
+              console.log(result)
+              msg.channel.send('Placed limit order');
+            } else {
+              msg.channel.send(`Something went wrong.`)
+            }
           } catch (error) {
             console.log(error)
           }
