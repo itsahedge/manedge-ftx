@@ -4,19 +4,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "babel-node ./index.js"
+    "start": "node -r esm index.js"
   },
   "author": "",
   "license": "ISC",
-  "devDependencies": {
-    "@babel/cli": "^7.12.8",
-    "@babel/core": "^7.12.9",
-    "@babel/node": "^7.12.6",
-    "@babel/preset-env": "^7.12.7"
-  },
+  "devDependencies": {},
   "dependencies": {
     "discord.js": "^12.5.1",
     "dotenv": "^8.2.0",
+    "esm": "^3.2.25",
     "ftx-api-rest": "0.0.6",
     "lodash": "^4.17.20"
   }
