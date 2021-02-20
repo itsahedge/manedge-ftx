@@ -9,6 +9,7 @@ import {
   getAccountDetail,
   getBalances,
   getDeposit,
+  getWithdrawal,
   getOpenPositions,
   getOpenOrders,
   getTriggerOrders,
@@ -161,6 +162,44 @@ const setBot = async () => {
       };
 
       fetchDepositAddress();
+    };
+
+
+    // ===================================================== 
+    // WITHDRAWALS: coin, size, address, code (2fa)
+    // .withdraw eth 0.01 ADDRESS 123456 
+    // ===================================================== 
+    if (msg.content.toLowerCase().startsWith('.withdraw')){
+      const inputStr = msg.content;
+      const parsed = _.split(inputStr, ' ', 5);
+      const coin = parsed[1].toUpperCase(); // ETH
+      const size = parsed[2]; // 0.01
+      const withdrawalAddress = parsed[3];
+      const code2fa = parsed[4];
+
+      const requestWithdrawal = async () => {
+        try {
+          console.log(ftx, coin, size, withdrawalAddress, code2fa)
+          const result = await getWithdrawal(ftx, coin, size, withdrawalAddress, code2fa);
+          console.log("RESULT:", result);
+ 
+          // let str = '';
+          // str += `**[${coin}] Deposit Address**\n**${address}** \n\n`;
+
+
+          // if (str) {
+          //   msg.channel.send(str);
+          // } else {
+          //   msg.channel.send("No balance || Error");
+          // }
+
+        } catch (error) {
+          console.log("API Error", error)
+          msg.channel.send(`API Error:\n${error}`);
+        }
+      };
+
+      requestWithdrawal();
     };
 
     // ===================================================== 
