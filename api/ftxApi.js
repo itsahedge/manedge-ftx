@@ -42,6 +42,27 @@ export const getBalances = async (ftx) => {
   };
 };
 
+export const getDeposit = async (ftx, coin, network) => {
+  // if method: erc20, trx, sol, omni, bep2
+  if (network) {
+    const data = await ftx.request({
+      method: 'GET',
+      path: `/wallet/deposit_address/${coin}?method=${network}`
+    });
+    const { result } = data;
+    return result;
+  } else {
+    const data = await ftx.request({
+      method: 'GET',
+      path: `/wallet/deposit_address/${coin}`
+    });
+
+    // console.log(data)
+    const { result } = data;
+    return result;
+  } 
+};
+
 export const getOpenPositions = async (ftx) => {
   const data = await ftx.request({
     method: 'GET',

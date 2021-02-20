@@ -8,6 +8,7 @@ require('dotenv').config();
 import {
   getAccountDetail,
   getBalances,
+  getDeposit,
   getOpenPositions,
   getOpenOrders,
   getTriggerOrders,
@@ -91,6 +92,10 @@ const setBot = async () => {
       fetchAccount();
     };
 
+    // ===================================================== 
+    // BALANCES
+    // .account 
+    // ===================================================== 
     if (msg.content === '.balances') {
       const fetchBalances = async () => {
         try {
@@ -107,7 +112,7 @@ const setBot = async () => {
               str += `**[${coin}]** **Free**: ${free} | **Total**: ${total}\n**USD Value**: ${formattedUsdVal}\n\n`;
             }            
           });
-          
+
           if (str) {
             msg.channel.send(str);
           } else {
@@ -119,6 +124,43 @@ const setBot = async () => {
       };
 
       fetchBalances();
+    };
+
+    // ===================================================== 
+    // DEPOSITS
+    // .deposit usdt erc20
+    // ===================================================== 
+    if (msg.content.toLowerCase().startsWith('.deposit')){
+      const inputStr = msg.content;
+      const parsed = _.split(inputStr, ' ', 3);
+      const coin = parsed[1].toUpperCase(); 
+
+      let network = "";
+      if (typeof parsed[2] !== 'undefined') {
+        network = parsed[2].toLowerCase();
+      }
+
+      const fetchDepositAddress = async () => {
+        try {
+          const depositAddress = await getDeposit(ftx, coin, network);
+          const { address } = depositAddress;
+ 
+          let str = '';
+          str += `**[${coin}] Deposit Address**\n**${address}** \n\n`;
+
+
+          if (str) {
+            msg.channel.send(str);
+          } else {
+            msg.channel.send("No balance || Error");
+          }
+        } catch (error) {
+          console.log("API Error", error)
+          msg.channel.send(`API Error:\n${error}`);
+        }
+      };
+
+      fetchDepositAddress();
     };
 
     // ===================================================== 
