@@ -7,6 +7,7 @@ require('dotenv').config();
 
 import {
   getAccountDetail,
+  getBalances,
   getOpenPositions,
   getOpenOrders,
   getTriggerOrders,
@@ -88,6 +89,36 @@ const setBot = async () => {
       };
 
       fetchAccount();
+    };
+
+    if (msg.content === '.balances') {
+      const fetchBalances = async () => {
+        try {
+          const balancesData = await getBalances(ftx);
+          const { main } = balancesData; // main is main account
+ 
+          let str = '';
+
+          _.forEach(main, (balance) => {
+            const { coin, free, total, usdValue } = balance;
+
+            if (usdValue >= 1) {
+              const formattedUsdVal = formatter.format(usdValue);
+              str += `**[${coin}]** **Free**: ${free} | **Total**: ${total}\n**USD Value**: ${formattedUsdVal}\n\n`;
+            }            
+          });
+          
+          if (str) {
+            msg.channel.send(str);
+          } else {
+            msg.channel.send("No balance || Error");
+          }
+        } catch (error) {
+          console.log("API Error", error)
+        }
+      };
+
+      fetchBalances();
     };
 
     // ===================================================== 

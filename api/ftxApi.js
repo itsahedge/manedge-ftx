@@ -25,6 +25,23 @@ export const getAccountDetail = async (ftx) => {
   };
 };
 
+export const getBalances = async (ftx) => {
+  const data = await ftx.request({
+    method: 'GET',
+    path: '/wallet/all_balances'
+  });
+
+  const {
+    result: {
+      main
+    },
+  } = data;
+
+  return {
+    main
+  };
+};
+
 export const getOpenPositions = async (ftx) => {
   const data = await ftx.request({
     method: 'GET',
