@@ -9,6 +9,7 @@ import {
   getAccountDetail,
   getBalances,
   getDeposit,
+  getWithdrawal,
   getOpenPositions,
   getOpenOrders,
   getTriggerOrders,
@@ -161,6 +162,42 @@ const setBot = async () => {
       };
 
       fetchDepositAddress();
+    };
+
+
+    // ===================================================== 
+    // WITHDRAWALS: coin, size, address, code (2fa)
+    // .withdraw eth 0.01 ADDRESS 123456 
+    // ===================================================== 
+    if (msg.content.toLowerCase().startsWith('.withdraw')){
+      const inputStr = msg.content;
+      const parsed = _.split(inputStr, ' ', 5);
+      const ticker = parsed[1].toUpperCase(); // ETH
+      const amount = parsed[2]; // 0.01
+      const withdrawalAddress = parsed[3];
+      const code2fa = parsed[4];
+
+      const requestWithdrawal = async () => {
+        try {
+          const withdrawalData = await getWithdrawal(ftx, ticker, amount, withdrawalAddress, code2fa);
+          const { coin, address, size, status } = withdrawalData; 
+ 
+          let str = '';
+          str += `**Withdrawal Request for ${size} ${coin}**\n**Withdrawal Address**: ${address}\n**Status**: ${status}\n\n`;
+
+          if (str) {
+            msg.channel.send(str);
+          } else {
+            msg.channel.send("Something went wrong with the Withdrawal Request");
+          }
+
+        } catch (error) {
+          console.log("API Error", error)
+          msg.channel.send(`API Error:\n${error}`);
+        }
+      };
+
+      requestWithdrawal();
     };
 
     // ===================================================== 
