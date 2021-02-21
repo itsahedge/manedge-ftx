@@ -43,7 +43,6 @@ export const getBalances = async (ftx) => {
 };
 
 export const getDeposit = async (ftx, coin, network) => {
-  // if method: erc20, trx, sol, omni, bep2
   if (network) {
     const data = await ftx.request({
       method: 'GET',
@@ -57,19 +56,15 @@ export const getDeposit = async (ftx, coin, network) => {
       path: `/wallet/deposit_address/${coin}`
     });
 
-    // console.log(data)
     const { result } = data;
     return result;
   } 
 };
 
-export const getWithdrawal = async (ftx, coin, size, withdrawalAddress, code2fa) => {
-  console.log("2FA:", code2fa)
-  console.log(typeof code2fa)
-  // if method: erc20, trx, sol, omni, bep2
+export const getWithdrawal = async (ftx, ticker, amount, withdrawalAddress, code2fa) => {
   const data = await ftx.request({
     method: 'POST',
-    path: `/wallet/withdrawals?coin=${coin}?size=${size}?address=${withdrawalAddress}?code=590156`
+    path: `/wallet/withdrawals?coin=${ticker}&size=${amount}&address=${withdrawalAddress}&code=${code2fa}`
   });
   const { result } = data;
   return result;
