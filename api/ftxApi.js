@@ -64,7 +64,13 @@ export const getDeposit = async (ftx, coin, network) => {
 export const getWithdrawal = async (ftx, ticker, amount, withdrawalAddress, code2fa) => {
   const data = await ftx.request({
     method: 'POST',
-    path: `/wallet/withdrawals?coin=${ticker}&size=${amount}&address=${withdrawalAddress}&code=${code2fa}`
+    path: `/wallet/withdrawals`,
+    data: {
+      coin: ticker,
+      size: amount,
+      address: withdrawalAddress,
+      code: code2fa
+    }
   });
   const { result } = data;
   return result;
