@@ -9,3 +9,5 @@ https://leovoel.github.io/embed-visualizer/
 ## Supported Exchanges
 
 - FTX
+
+- Binance (Soon)
