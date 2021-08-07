@@ -391,58 +391,35 @@ const start = async (client) => {
     // }
 
     // =====================================================
-    // CANCEL ALL ORDERS (TRIGGERS AND LIMITS)
-    // .del-all rune-perp
+    // CANCEL ORDER BY ID or ALL ORDERS FOR A TICKER
+    // .cancel (orderId or ticker)
     // =====================================================
-    // if (msg.content.toLowerCase().startsWith('.del-all')) {
-    //   const inputStr = msg.content;
+    if (msg.content.toLowerCase().startsWith('.cancel')) {
+      const inputStr = msg.content;
+      const parsed = _.split(inputStr, ' ', 2); // parsed Array
+      const orderId = parsed[1].toUpperCase();
 
-    //   const parsed = _.split(inputStr, ' ', 2); // parsed Array
-    //   const ticker = parsed[1];
-    //   console.log(ticker)
+      const cancelOrder = async (id: any) => {
+        try {
+          // check for id is a ticker or valid number
+          const orderToCancel = isNaN(id)
+            ? await ftxClient.cancelAllOrders({ market: id })
+            : await ftxClient.cancelOrder(id);
 
-    //   const cancelOrders = async (ticker: string) => {
-    //     try {
-    //       const orders = await cancelAllOrders(ftx, ticker);
-    //       console.log(orders)
-
-    //       if (orders) {
-    //         msg.channel.send(`Cancelled all Open Orders for ${ticker}`);
-    //       } else {
-    //         msg.channel.send(`No Trigger Orders for ${ticker}`)
-    //       }
-    //     } catch (error) {
-    //       console.log('API Error', error)
-    //     }
-    //   }
-    //   cancelOrders(ticker)
-    // }
-
-    // =====================================================
-    // CANCEL ORDER BY ID
-    // .cancel 21589500506
-    // =====================================================
-    // if (msg.content.toLowerCase().startsWith('.cancel')) {
-    //   const inputStr = msg.content;
-
-    //   const parsed = _.split(inputStr, ' ', 2); // parsed Array
-    //   const id = parsed[1];
-
-    //   const cancelOrder = async (id) => {
-    //     try {
-    //       const orders = await cancelOrderById(ftx, id);
-    //       console.log(orders)
-
-    //       if (orders) {
-    //         msg.channel.send(`${orders.message}`);
-    //       } else {
-    //         msg.channel.send(`No Trigger Orders for ${ticker}`)
-    //       }
-    //     } catch (error) {
-    //       console.log('API Error', error)
-    //     }
-    //   }
-    //   cancelOrder(id)
-    // }
+          if (orderToCancel) {
+            msg.channel.send(
+              isNaN(id)
+                ? `Cancelling all orders for (${id})`
+                : `Order queued for cancellation: (${id})`
+            );
+          } else {
+            msg.channel.send(`No Trigger Orders for {ticker here}`);
+          }
+        } catch (error) {
+          console.log('API Error', error);
+        }
+      };
+      cancelOrder(orderId);
+    }
   });
 };
