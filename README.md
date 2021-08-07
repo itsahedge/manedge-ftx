@@ -9,13 +9,3 @@ https://leovoel.github.io/embed-visualizer/
 ## Supported Exchanges
 
 - FTX
-
-###
-
-//TODO:
-// market-buy X amount for ABC market
-// market-sell X amount for ABC market
-// market-sell to close current open position in full and half size
-// Market close specified amount of size only
-// Market close full position
-// Market close half position

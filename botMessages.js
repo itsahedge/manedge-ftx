@@ -49,8 +49,6 @@ export const openPositionsEmbed = (str) =>
 
     .setTimestamp();
 
-
-// change this - formatting is really weird if theres a ton of orders (RUNE for ex)
 export const openOrdersEmbed = (str) =>
   new Discord.MessageEmbed()
     .setTitle('Open Positions')
