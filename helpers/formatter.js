@@ -26,23 +26,23 @@ var formatAccount = function (data) {
 };
 exports.formatAccount = formatAccount;
 var formatOpenPositions = function (data) {
-    // ticker: string; side: string; costUsd: any; netSize: any; recentAverageOpenPrice: any; recentBreakEvenPrice: any; entryPrice: any; recentPnl: any;
-    // filter out the objects that has a size greater than 0
     var currentPositions = _.filter(data, function (p) {
         return p.size !== 0;
     }).map(function (o) {
         return {
             ticker: o.future,
-            side: o.side,
+            side: o.side === 'buy' ? 'LONG' : 'SHORT',
             netSize: o.netSize,
+            cost: formatter.format(o.cost),
+            asset: o.future.split('-')[0],
+            entryPrice: o.entryPrice,
             avgOpenPrice: o.recentAverageOpenPrice,
             breakEvenPrice: o.recentBreakEvenPrice,
             markPrice: o.entryPrice,
             longOrderSize: o.longOrderSize,
             shortOrderSize: o.shortOrderSize,
             estimatedLiquidationPrice: o.estimatedLiquidationPrice,
-            unrealizedPnl: o.unrealizedPnl,
-            recentPnl: o.recentPnl
+            unrealizedPnl: formatter.format(o.recentPnl)
         };
     });
     return currentPositions;

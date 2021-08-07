@@ -36,16 +36,18 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 exports.__esModule = true;
-var Discord = require('discord.js');
+// const Discord = require('discord.js');
+var _a = require('discord.js'), Client = _a.Client, Intents = _a.Intents;
+var client = new Client({ intents: [Intents.FLAGS.GUILDS] });
 require('dotenv').config();
 var config_1 = require("./config");
 var formatter_1 = require("./helpers/formatter");
 var commandHandler_1 = require("./helpers/commandHandler");
 var startBot = function () {
-    var client = new Discord.Client();
     var TOKEN = process.env.TOKEN;
     client.login(TOKEN);
     client.on('ready', function () {
+        var emojiTest = client.emojis.cache.find(function (e) { return e.name === 'long'; });
         console.info("Logged in as " + client.user.tag + "!");
         start(client);
     });
@@ -62,8 +64,19 @@ var start = function (client) { return __awaiter(void 0, void 0, void 0, functio
     return __generator(this, function (_a) {
         client.on('message', function (msg) {
             // move these into separate
-            var longEmoji = msg.guild.emojis.cache.find(function (emoji) { return emoji.name === 'long'; });
-            var shortEmoji = msg.guild.emojis.cache.find(function (emoji) { return emoji.name === 'short'; });
+            // const emoji = client.emojis.cache.get('838247076201627655');
+            // const emojiTest = client.emojis.cache.get('838247076201627655');
+            // let emojiTest = client.emojis.cache.find((e) => e.name === 'long');
+            // let longEmoji = msg.guild.emojis.cache.find(
+            //   (emoji) => emoji.name === 'long'
+            // );
+            // const longEmoji = '<:long:838247076201627655>';
+            var longEmojiFromOther = '<:long:873659858283532320>';
+            var sniperEmoji = '<:pepe_sniper:873659469320577064>';
+            var shortEmoji = '<:short:873659191141732372>';
+            // let shortEmoji = msg.guild.emojis.cache.find(
+            //   (emoji) => emoji.name === 'short'
+            // );
             // =====================================================
             // ACCOUNT DETAILS
             // .account
@@ -102,14 +115,24 @@ var start = function (client) { return __awaiter(void 0, void 0, void 0, functio
                 //   return future;
                 // };
                 var fetchPositions = function () { return __awaiter(void 0, void 0, void 0, function () {
-                    var data, test;
+                    var data, str, positions;
                     return __generator(this, function (_a) {
                         switch (_a.label) {
                             case 0: return [4 /*yield*/, config_1.ftxClient.getPositions(true)];
                             case 1:
                                 data = _a.sent();
-                                test = formatter_1.formatOpenPositions(data.result);
-                                console.log(test);
+                                str = '';
+                                positions = formatter_1.formatOpenPositions(data.result);
+                                positions.map(function (x) {
+                                    str += "**" + (x.side === 'LONG' ? longEmojiFromOther : shortEmoji) + " " + x.ticker + "**\n**Net Size**: " + x.netSize + " " + x.asset + "\n**Cost**: " + x.cost + "\n**Avg Entry**: " + x.avgOpenPrice + " | **B/E**: " + x.breakEvenPrice + "\n**Mark**: " + x.entryPrice + "\n**uPnL**: " + x.unrealizedPnl + "\n\n";
+                                });
+                                console.log(positions);
+                                if (str) {
+                                    msg.channel.send(str);
+                                }
+                                else {
+                                    msg.channel.send('No open positions');
+                                }
                                 return [2 /*return*/];
                         }
                     });
