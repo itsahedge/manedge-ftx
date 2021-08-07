@@ -1,0 +1,84 @@
+{
+  "root": true,
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["react", "@typescript-eslint", "import", "react-hooks"],
+  "parserOptions": {
+    "ecmaFeatures": {
+      "jsx": true,
+    },
+    "ecmaVersion": 12,
+    "sourceType": "module",
+    "tsconfigRootDir": "__dirname",
+  },
+  "extends": [
+    "eslint:recommended",
+    "plugin:react/recommended",
+    "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:@typescript-eslint/recommended",
+    "airbnb",
+    "airbnb/hooks",
+  ],
+  "settings": {
+    "react": {
+      "pragma": "React",
+      "version": "detect",
+    },
+    "import/resolver": {
+      "node": {
+        "paths": ["src"],
+        "extensions": [".js", ".ts", ".d.ts", ".tsx"]
+      },
+    },
+  },
+  "rules": {
+    "indent": [
+      "error",
+      2,
+      {
+        "SwitchCase": 1,
+        "ignoredNodes": ["JSXElement", "JSXElement * ", "ConditionalExpression"],
+      },
+    ],
+    "import/extensions": [
+      "error",
+      "ignorePackages",
+      {
+        "js": "never",
+        "jsx": "never",
+        "ts": "never",
+        "tsx": "never"
+      }
+    ],
+    "max-len": ["error", { "code": 120 }],
+    "import/prefer-default-export": "off",
+    "react/require-default-props": "off",
+    "linebreak-style": ["error", "unix"],
+    "quotes": ["error", "single"],
+    "camelcase": "off",
+    "@typescript-eslint/camelcase": "off",
+    "comma-dangle": ["error", "always-multiline"],
+    "react/prop-types": "off",
+    "no-use-before-define": "off",
+    "no-shadow": "off",
+    "@typescript-eslint/no-shadow": ["error"],
+    "@typescript-eslint/no-use-before-define": ["error"],
+    "react/jsx-max-props-per-line": [2, { "maximum": 1 }],
+    "react/jsx-filename-extension": [2, { "extensions": [".js", ".jsx", ".ts", ".tsx"] }],
+    "@typescript-eslint/no-empty-function": "warn",
+    "@typescript-eslint/no-var-requires": "warn",
+    "@typescript-eslint/no-array-constructor": "warn",
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/explicit-module-boundary-types": "off",
+    "@typescript-eslint/explicit-function-return-type": 1,
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      {
+        "vars": "all",
+        "args": "after-used",
+        "argsIgnorePattern": "_",
+        "ignoreRestSiblings": false,
+        "varsIgnorePattern": "_"
+      }
+    ]
+  }
+}
