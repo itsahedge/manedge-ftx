@@ -315,38 +315,40 @@ var start = function (client) { return __awaiter(void 0, void 0, void 0, functio
             // PLACE MARKET ORDERS
             // .market buy snx-perp 10
             // =====================================================
-            // if (msg.content.toLowerCase().startsWith('.market')) {
-            //   const inputStr = msg.content;
-            //   const parsed = _.split(inputStr, ' ', 5); // parsed Array
-            //   const sides = parsed[1]; // buy or sell
-            //   const pair = parsed[2]; // rune-perp
-            //   const size = parsed[3]; // 1 RUNE
-            //   const newSize = parseFloat(size);
-            //   const placeMarketOrder = async () => {
-            //     try {
-            //       const resp = await ftx.request({
-            //         method: 'POST',
-            //         path: '/orders',
-            //         data: {
-            //           market: pair,
-            //           side: sides,
-            //           price: null, //send null for market orders
-            //           type: 'market',
-            //           size: newSize,
-            //         },
-            //       });
-            //       const { result } = resp;
-            //       console.log(result);
-            //       const { market, side, size, type } = result;
-            //       // return result;
-            //       msg.channel.send(`${type}: ${side.toUpperCase()} ${market} ${size} `)
-            //     } catch (error) {
-            //       console.error(error)
-            //       msg.channel.send("format not correct")
-            //     }
-            //   };
-            //   placeMarketOrder();
-            // }
+            if (msg.content.toLowerCase().startsWith('.market')) {
+                var inputStr = msg.content;
+                var parsed = _.split(inputStr, ' ', 5); // parsed Array
+                var side_1 = parsed[1]; // buy or sell
+                var pair_1 = parsed[2]; // rune-perp
+                var size_1 = parseFloat(parsed[3]); // 1 RUNE
+                var placeMarketOrder = function () { return __awaiter(void 0, void 0, void 0, function () {
+                    var data, error_3;
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0:
+                                _a.trys.push([0, 2, , 3]);
+                                return [4 /*yield*/, config_1.ftxClient.placeOrder({
+                                        market: pair_1,
+                                        side: side_1,
+                                        price: null,
+                                        size: size_1
+                                    })];
+                            case 1:
+                                data = _a.sent();
+                                console.log(data);
+                                msg.channel.send("success");
+                                return [3 /*break*/, 3];
+                            case 2:
+                                error_3 = _a.sent();
+                                console.error(error_3);
+                                msg.channel.send('format not correct');
+                                return [3 /*break*/, 3];
+                            case 3: return [2 /*return*/];
+                        }
+                    });
+                }); };
+                placeMarketOrder();
+            }
             // =====================================================
             // PLACE LIMIT ORDERS
             // .limit sell RUNE-PERP 1 3

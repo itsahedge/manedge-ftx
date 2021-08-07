@@ -289,42 +289,34 @@ const start = async (client) => {
 
     // =====================================================
     // PLACE MARKET ORDERS
-    // .market buy snx-perp 10
+    // .market buy btc-perp 0.01
     // =====================================================
-    // if (msg.content.toLowerCase().startsWith('.market')) {
-    //   const inputStr = msg.content;
-    //   const parsed = _.split(inputStr, ' ', 5); // parsed Array
+    if (msg.content.toLowerCase().startsWith('.market')) {
+      const inputStr = msg.content;
+      const parsed = _.split(inputStr, ' ', 5); // parsed Array
 
-    //   const sides = parsed[1]; // buy or sell
-    //   const pair = parsed[2]; // rune-perp
-    //   const size = parsed[3]; // 1 RUNE
-    //   const newSize = parseFloat(size);
+      const sideDirection = parsed[1]; // buy or sell
+      const pair = parsed[2]; // btc-perp or` ftt/usd
+      const sizeAmount = parseFloat(parsed[3]);
 
-    //   const placeMarketOrder = async () => {
-    //     try {
-    //       const resp = await ftx.request({
-    //         method: 'POST',
-    //         path: '/orders',
-    //         data: {
-    //           market: pair,
-    //           side: sides,
-    //           price: null, //send null for market orders
-    //           type: 'market',
-    //           size: newSize,
-    //         },
-    //       });
-    //       const { result } = resp;
-    //       console.log(result);
-    //       const { market, side, size, type } = result;
-    //       // return result;
-    //       msg.channel.send(`${type}: ${side.toUpperCase()} ${market} ${size} `)
-    //     } catch (error) {
-    //       console.error(error)
-    //       msg.channel.send("format not correct")
-    //     }
-    //   };
-    //   placeMarketOrder();
-    // }
+      const placeMarketOrder = async () => {
+        try {
+          const response = await ftxClient.placeOrder({
+            market: pair,
+            side: sideDirection,
+            price: null,
+            size: sizeAmount,
+          });
+
+          const { market, side, size, type } = response.result;
+          msg.channel.send(`${type}: ${side.toUpperCase()} ${market} ${size} `);
+        } catch (error) {
+          console.error(error);
+          msg.channel.send('format not correct');
+        }
+      };
+      placeMarketOrder();
+    }
 
     // =====================================================
     // PLACE LIMIT ORDERS
