@@ -1,6 +1,6 @@
 require('dotenv').config();
 
-import { RestClient } from "ftx-api"
+import { RestClient } from 'ftx-api';
 
 // const restClientOptions = {
 //   // override the max size of the request window (in ms)
@@ -26,15 +26,15 @@ import { RestClient } from "ftx-api"
 //   // subAccountName?: string;
 // };
 
-// examples: 
+// examples:
 // https://github.com/tiagosiebler/ftx-api/blob/HEAD/src/rest-client.ts
 
 const API_KEY = process.env.API_KEY;
 const PRIVATE_KEY = process.env.PRIVATE_KEY;
 
-export const client = new RestClient(
+export const ftxClient = new RestClient(
   API_KEY,
-  PRIVATE_KEY,
+  PRIVATE_KEY
 
   // restClientOptions,
   // requestLibraryOptions

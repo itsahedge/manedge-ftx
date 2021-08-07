@@ -36,18 +36,41 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 exports.__esModule = true;
-exports.getAccountData = void 0;
-var config_1 = require("../config");
-var getAccountData = function () { return __awaiter(void 0, void 0, void 0, function () {
-    var response, _a, totalAccountValue, totalPositionSize, collateral, freeCollateral;
-    return __generator(this, function (_b) {
-        switch (_b.label) {
-            case 0: return [4 /*yield*/, config_1.ftxClient.getAccount()];
+exports.fetchAccount = void 0;
+var requests_1 = require("../apiv2/requests");
+var formatter_1 = require("../helpers/formatter");
+var fetchAccount = function (msg) { return __awaiter(void 0, void 0, void 0, function () {
+    var data, formattedData, totalAccountValue, totalPositionSize, collateral, freeCollateral, totalLeverage, error_1;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                _a.trys.push([0, 2, , 3]);
+                return [4 /*yield*/, requests_1.getAccountData()];
             case 1:
-                response = _b.sent();
-                _a = response.result, totalAccountValue = _a.totalAccountValue, totalPositionSize = _a.totalPositionSize, collateral = _a.collateral, freeCollateral = _a.freeCollateral;
-                return [2 /*return*/, { totalAccountValue: totalAccountValue, totalPositionSize: totalPositionSize, collateral: collateral, freeCollateral: freeCollateral }];
+                data = _a.sent();
+                formattedData = formatter_1.formatAccount(data);
+                totalAccountValue = formattedData.totalAccountValue, totalPositionSize = formattedData.totalPositionSize, collateral = formattedData.collateral, freeCollateral = formattedData.freeCollateral, totalLeverage = formattedData.totalLeverage;
+                msg.channel.send("\n    **\uD83D\uDCB0: " + totalAccountValue + "**\n**Total Collateral**: " + collateral + "\n**Total Position Size**: " + totalPositionSize + "\n**Free Collateral**: " + freeCollateral + "\n**Leverage Used: **" + totalLeverage + "x\n\n  ");
+                return [3 /*break*/, 3];
+            case 2:
+                error_1 = _a.sent();
+                console.log('API Error', error_1);
+                return [3 /*break*/, 3];
+            case 3: return [2 /*return*/];
         }
     });
 }); };
-exports.getAccountData = getAccountData;
+exports.fetchAccount = fetchAccount;
+// export const fetchPositions = async (msg: {
+//   guild?: { emojis: { cache: any[] } };
+//   content?: string;
+//   channel: any;
+// }) => {
+//   try {
+//     const data = await getOpenPositionData();
+//     console.log('from fetchPositions: ', data);
+//     msg.channel.send(`${data}`);
+//   } catch (error) {
+//     console.log('API Error', error);
+//   }
+// };

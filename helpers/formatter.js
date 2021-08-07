@@ -1,6 +1,7 @@
 "use strict";
 exports.__esModule = true;
-exports.formatAccount = void 0;
+exports.formatOpenPositions = exports.formatAccount = void 0;
+var _ = require("lodash");
 var formatter = new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
@@ -24,3 +25,26 @@ var formatAccount = function (data) {
     };
 };
 exports.formatAccount = formatAccount;
+var formatOpenPositions = function (data) {
+    // ticker: string; side: string; costUsd: any; netSize: any; recentAverageOpenPrice: any; recentBreakEvenPrice: any; entryPrice: any; recentPnl: any;
+    // filter out the objects that has a size greater than 0
+    var currentPositions = _.filter(data, function (p) {
+        return p.size !== 0;
+    }).map(function (o) {
+        return {
+            ticker: o.future,
+            side: o.side,
+            netSize: o.netSize,
+            avgOpenPrice: o.recentAverageOpenPrice,
+            breakEvenPrice: o.recentBreakEvenPrice,
+            markPrice: o.entryPrice,
+            longOrderSize: o.longOrderSize,
+            shortOrderSize: o.shortOrderSize,
+            estimatedLiquidationPrice: o.estimatedLiquidationPrice,
+            unrealizedPnl: o.unrealizedPnl,
+            recentPnl: o.recentPnl
+        };
+    });
+    return currentPositions;
+};
+exports.formatOpenPositions = formatOpenPositions;

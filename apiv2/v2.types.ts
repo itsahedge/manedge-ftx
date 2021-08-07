@@ -4,3 +4,26 @@ export interface Account {
   collateral: number;
   freeCollateral: number;
 }
+
+export interface OpenPosition {
+  future: string;
+  size: number;
+  side: string;
+  netSize: number;
+  longOrderSize: number;
+  shortOrderSize: number;
+  cost: number;
+  entryPrice: number;
+  unrealizedPnl: number;
+  realizedPnl: number;
+  initialMarginRequirement: number;
+  maintenanceMarginRequirement: number;
+  openSize: number;
+  collateralUsed: number;
+  estimatedLiquidationPrice: number;
+  recentAverageOpenPrice: number;
+  recentPnl: number;
+  recentBreakEvenPrice: number;
+  cumulativeBuySize: number;
+  cumulativeSellSize: number;
+}

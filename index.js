@@ -38,20 +38,9 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 exports.__esModule = true;
 var Discord = require('discord.js');
 require('dotenv').config();
-// import {
-//   getAccountDetail,
-//   getBalances,
-//   getDeposit,
-//   getWithdrawal,
-//   getOpenPositions,
-//   getOpenOrders,
-//   getTriggerOrders,
-//   cancelAllOrders,
-//   placeTriggerOrders,
-//   cancelOrderById
-// } from './api/ftxApi';
-var requests_1 = require("./apiv2/requests");
+var config_1 = require("./config");
 var formatter_1 = require("./helpers/formatter");
+var commandHandler_1 = require("./helpers/commandHandler");
 var startBot = function () {
     var client = new Discord.Client();
     var TOKEN = process.env.TOKEN;
@@ -75,40 +64,62 @@ var start = function (client) { return __awaiter(void 0, void 0, void 0, functio
             // move these into separate
             var longEmoji = msg.guild.emojis.cache.find(function (emoji) { return emoji.name === 'long'; });
             var shortEmoji = msg.guild.emojis.cache.find(function (emoji) { return emoji.name === 'short'; });
-            var testEmoji = client.guild.emojis.cache.find(function (e) { return e.name === "biden"; });
-            // ===================================================== 
+            // =====================================================
             // ACCOUNT DETAILS
-            // .account 
-            // ===================================================== 
+            // .account
+            // =====================================================
             if (msg.content === '.account') {
-                var fetchAccount = function () { return __awaiter(void 0, void 0, void 0, function () {
-                    var data, formattedData, totalAccountValue, totalPositionSize, collateral, freeCollateral, totalLeverage, error_1;
+                commandHandler_1.fetchAccount(msg);
+            }
+            // =====================================================
+            // GET ALL OPEN POSITIONS
+            // .positions
+            // =====================================================
+            if (msg.content === '.positions') {
+                // const fetchPositions = async () => {
+                //   const positionsData = await getOpenPositions(ftx);
+                //   let str = '';
+                //   positionsData.map((p: { ticker: string; side: string; costUsd: any; netSize: any; recentAverageOpenPrice: any; recentBreakEvenPrice: any; entryPrice: any; recentPnl: any; }) => {
+                //     const splitAsset = p.ticker.split('-');
+                //     const asset = splitAsset[0];
+                //     if (p.side === "LONG") {
+                //       const formattedCost = formatter.format(p.costUsd)
+                //       str += `**${longEmoji} ${p.ticker}**\n**Net Size**: ${p.netSize} ${asset}\n**Cost**: ${formattedCost}\n**Avg Entry**: ${p.recentAverageOpenPrice} | **B/E**: ${p.recentBreakEvenPrice}\n**Mark**: ${p.entryPrice}\n**uPnL**: ${p.recentPnl}\n\n`;
+                //     } else {
+                //       const formattedCost = formatter.format(p.costUsd)
+                //       str += `**${shortEmoji} ${p.ticker}**\n**Net Size**: ${p.netSize} ${asset}\n**Cost**: ${formattedCost}\n**Avg Entry**: ${p.recentAverageOpenPrice} | **B/E**: ${p.recentBreakEvenPrice}\n**Mark**: ${p.entryPrice}\n**uPnL**: ${p.recentPnl}\n\n`;
+                //     }
+                //   });
+                //   if (str) {
+                //     msg.channel.send(str);
+                //   } else {
+                //     msg.channel.send("No open positions");
+                //   }
+                // };
+                // importing this function does not work for some reason
+                // const formatOpenPositions = (data: OpenPosition[]): string => {
+                //   const { future } = data[0];
+                //   return future;
+                // };
+                var fetchPositions = function () { return __awaiter(void 0, void 0, void 0, function () {
+                    var data, test;
                     return __generator(this, function (_a) {
                         switch (_a.label) {
-                            case 0:
-                                _a.trys.push([0, 2, , 3]);
-                                return [4 /*yield*/, requests_1.getAccountDetailV2()];
+                            case 0: return [4 /*yield*/, config_1.ftxClient.getPositions(true)];
                             case 1:
                                 data = _a.sent();
-                                formattedData = formatter_1.formatAccount(data);
-                                totalAccountValue = formattedData.totalAccountValue, totalPositionSize = formattedData.totalPositionSize, collateral = formattedData.collateral, freeCollateral = formattedData.freeCollateral, totalLeverage = formattedData.totalLeverage;
-                                msg.channel.send("\n            **\uD83D\uDCB0: " + longEmoji + " " + totalAccountValue + "**\n**Total Collateral**: " + collateral + "\n**Total Position Size**: " + totalPositionSize + "\n**Free Collateral**: " + freeCollateral + "\n**Leverage Used: **" + totalLeverage + "x\n\n          ");
-                                return [3 /*break*/, 3];
-                            case 2:
-                                error_1 = _a.sent();
-                                console.log("API Error", error_1);
-                                return [3 /*break*/, 3];
-                            case 3: return [2 /*return*/];
+                                test = formatter_1.formatOpenPositions(data.result);
+                                console.log(test);
+                                return [2 /*return*/];
                         }
                     });
                 }); };
-                fetchAccount();
+                fetchPositions();
             }
-            ;
-            // ===================================================== 
+            // =====================================================
             // BALANCES
-            // .account 
-            // ===================================================== 
+            // .account
+            // =====================================================
             // if (msg.content === '.balances') {
             //   const fetchBalances = async () => {
             //     try {
@@ -120,7 +131,7 @@ var start = function (client) { return __awaiter(void 0, void 0, void 0, functio
             //         if (usdValue >= 1) {
             //           const formattedUsdVal = formatter.format(usdValue);
             //           str += `**[${coin}]** **Free**: ${free} | **Total**: ${total}\n**USD Value**: ${formattedUsdVal}\n\n`;
-            //         }            
+            //         }
             //       });
             //       if (str) {
             //         msg.channel.send(str);
@@ -133,14 +144,14 @@ var start = function (client) { return __awaiter(void 0, void 0, void 0, functio
             //   };
             //   fetchBalances();
             // };
-            // ===================================================== 
+            // =====================================================
             // DEPOSITS
             // .deposit usdt erc20
-            // ===================================================== 
+            // =====================================================
             // if (msg.content.toLowerCase().startsWith('.deposit')){
             //   const inputStr = msg.content;
             //   const parsed = _.split(inputStr, ' ', 3);
-            //   const coin = parsed[1].toUpperCase(); 
+            //   const coin = parsed[1].toUpperCase();
             //   let network = "";
             //   if (typeof parsed[2] !== 'undefined') {
             //     network = parsed[2].toLowerCase();
@@ -163,10 +174,10 @@ var start = function (client) { return __awaiter(void 0, void 0, void 0, functio
             //   };
             //   fetchDepositAddress();
             // };
-            // ===================================================== 
+            // =====================================================
             // WITHDRAWALS: coin, size, address, code (2fa)
-            // .withdraw eth 0.01 ADDRESS 123456 
-            // ===================================================== 
+            // .withdraw eth 0.01 ADDRESS 123456
+            // =====================================================
             // if (msg.content.toLowerCase().startsWith('.withdraw')){
             //   const inputStr = msg.content;
             //   const parsed = _.split(inputStr, ' ', 5);
@@ -177,7 +188,7 @@ var start = function (client) { return __awaiter(void 0, void 0, void 0, functio
             //   const requestWithdrawal = async () => {
             //     try {
             //       const withdrawalData = await getWithdrawal(ftx, ticker, amount, withdrawalAddress, code2fa);
-            //       const { coin, address, size, status } = withdrawalData; 
+            //       const { coin, address, size, status } = withdrawalData;
             //       let str = '';
             //       str += `**Withdrawal Request for ${size} ${coin}**\n**Withdrawal Address**: ${address}\n**Status**: ${status}\n\n`;
             //       if (str) {
@@ -192,38 +203,11 @@ var start = function (client) { return __awaiter(void 0, void 0, void 0, functio
             //   };
             //   requestWithdrawal();
             // };
-            // ===================================================== 
-            // GET ALL OPEN POSITIONS
-            // .positions 
-            // ===================================================== 
-            // if (msg.content === '.positions') {
-            //   const fetchPositions = async () => {
-            //     const positionsData = await getOpenPositions(ftx);
-            //     let str = '';
-            //     positionsData.map((p: { ticker: string; side: string; costUsd: any; netSize: any; recentAverageOpenPrice: any; recentBreakEvenPrice: any; entryPrice: any; recentPnl: any; }) => {
-            //       const splitAsset = p.ticker.split('-');
-            //       const asset = splitAsset[0];
-            //       if (p.side === "LONG") {  
-            //         const formattedCost = formatter.format(p.costUsd)
-            //         str += `**${longEmoji} ${p.ticker}**\n**Net Size**: ${p.netSize} ${asset}\n**Cost**: ${formattedCost}\n**Avg Entry**: ${p.recentAverageOpenPrice} | **B/E**: ${p.recentBreakEvenPrice}\n**Mark**: ${p.entryPrice}\n**uPnL**: ${p.recentPnl}\n\n`;
-            //       } else {
-            //         const formattedCost = formatter.format(p.costUsd)
-            //         str += `**${shortEmoji} ${p.ticker}**\n**Net Size**: ${p.netSize} ${asset}\n**Cost**: ${formattedCost}\n**Avg Entry**: ${p.recentAverageOpenPrice} | **B/E**: ${p.recentBreakEvenPrice}\n**Mark**: ${p.entryPrice}\n**uPnL**: ${p.recentPnl}\n\n`;
-            //       }
-            //     });
-            //     if (str) {
-            //       msg.channel.send(str);
-            //     } else {
-            //       msg.channel.send("No open positions");
-            //     }
-            //   };
-            //   fetchPositions();
-            // };
-            // ===================================================== 
+            // =====================================================
             // GET TRIGGER ORDERS (TP/STOP)
             // .get-trigger btc-perp
-            // ===================================================== 
-            // if (msg.content.startsWith('.trigger')) { 
+            // =====================================================
+            // if (msg.content.startsWith('.trigger')) {
             //   const inputStr = msg.content.toUpperCase();
             //   const inputArr = inputStr.split(' ')
             //   const ticker = inputArr[1]
@@ -245,10 +229,10 @@ var start = function (client) { return __awaiter(void 0, void 0, void 0, functio
             //   }
             //   fetchTriggerOrders(ticker)
             // };
-            // ===================================================== 
+            // =====================================================
             // GET OPEN ORDERS
             // .orders btc-perp
-            // ===================================================== 
+            // =====================================================
             // if (msg.content.toLowerCase().startsWith('.orders')) {
             //   const inputStr = msg.content.toUpperCase();
             //   const parsed = _.split(inputStr, ' ', 2); // parsed Array
@@ -263,8 +247,8 @@ var start = function (client) { return __awaiter(void 0, void 0, void 0, functio
             //         id += `${p.id}`
             //       });
             //       if (str) {
-            //         msg.channel.send(id);      
-            //         msg.channel.send(str);      
+            //         msg.channel.send(id);
+            //         msg.channel.send(str);
             //       } else {
             //         msg.channel.send(`No Open Orders for ${ticker}`)
             //       }
@@ -274,10 +258,10 @@ var start = function (client) { return __awaiter(void 0, void 0, void 0, functio
             //   };
             //   fetchOpenOrders(ticker);
             // }
-            // ===================================================== 
+            // =====================================================
             // PLACE MARKET ORDERS
             // .market buy snx-perp 10
-            // ===================================================== 
+            // =====================================================
             // if (msg.content.toLowerCase().startsWith('.market')) {
             //   const inputStr = msg.content;
             //   const parsed = _.split(inputStr, ' ', 5); // parsed Array
@@ -310,10 +294,10 @@ var start = function (client) { return __awaiter(void 0, void 0, void 0, functio
             //   };
             //   placeMarketOrder();
             // }
-            // ===================================================== 
+            // =====================================================
             // PLACE LIMIT ORDERS
             // .limit sell RUNE-PERP 1 3
-            // ===================================================== 
+            // =====================================================
             // if (msg.content.toLowerCase().startsWith('.limit')) {
             //   const inputStr = msg.content;
             //   const parsed = _.split(inputStr, ' ', 5); // parsed Array
@@ -334,14 +318,14 @@ var start = function (client) { return __awaiter(void 0, void 0, void 0, functio
             //       type: 'limit',
             //       size: newSize, // foramtted
             //     };
-            //     const placeLimitOrder = async () => { 
+            //     const placeLimitOrder = async () => {
             //       try {
             //         const resp = await ftx.request({
             //           method: 'POST',
             //           path: '/orders',
             //           data: data,
             //         });
-            //         const { result } = resp; 
+            //         const { result } = resp;
             //         if (result) {
             //           console.log(result)
             //           msg.channel.send('Placed limit order');
@@ -357,14 +341,14 @@ var start = function (client) { return __awaiter(void 0, void 0, void 0, functio
             // }
             // =====================================================
             // PLACE TRIGGER ORDERS (STOPS)
-            // .sl sell RUNE-PERP 1 0.43 
+            // .sl sell RUNE-PERP 1 0.43
             // =====================================================
             // if (msg.content.toLowerCase().startsWith('.sl')) {
             //   const inputStr = msg.content;
             //   const parsed = _.split(inputStr, ' ', 5); // parsed Array
-            //   const side = parsed[1]; 
-            //   const pair = parsed[2]; 
-            //   const size = parsed[3]; 
+            //   const side = parsed[1];
+            //   const pair = parsed[2];
+            //   const size = parsed[3];
             //   const triggerPrice = parsed[4] // price (if not provided to null for market?)
             //   const newSize = parseFloat(size);
             //   const trigger = parseFloat(triggerPrice);
@@ -379,14 +363,14 @@ var start = function (client) { return __awaiter(void 0, void 0, void 0, functio
             //       type: 'stop', // stop, trailingStop or takeProfit; default is stop
             //       size: newSize, // foramtted
             //     };
-            //     const placeTriggerOrder = async () => { 
+            //     const placeTriggerOrder = async () => {
             //       try {
             //         const resp = await ftx.request({
             //           method: 'POST',
             //           path: '/conditional_orders',
             //           data: data,
             //         });
-            //         const { result } = resp; 
+            //         const { result } = resp;
             //         if (result) {
             //           msg.channel.send('Placed stop market trigger order');
             //         }
@@ -423,7 +407,7 @@ var start = function (client) { return __awaiter(void 0, void 0, void 0, functio
             //   cancelOrders(ticker)
             // }
             // =====================================================
-            // CANCEL ORDER BY ID 
+            // CANCEL ORDER BY ID
             // .cancel 21589500506
             // =====================================================
             // if (msg.content.toLowerCase().startsWith('.cancel')) {

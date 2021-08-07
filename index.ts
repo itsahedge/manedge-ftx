@@ -1,7 +1,8 @@
-import _ from 'lodash';
+import * as _ from 'lodash';
 const Discord = require('discord.js');
 
 require('dotenv').config();
+import { ftxClient } from './config';
 
 // import {
 //   getAccountDetail,
@@ -15,8 +16,10 @@ require('dotenv').config();
 //   placeTriggerOrders,
 //   cancelOrderById
 // } from './api/ftxApi';
-import { getAccountDetailV2 } from './apiv2/requests';
-import { formatAccount } from './helpers/formatter';
+// import { getOpenPositionData } from './apiv2/requests';
+import { Account, OpenPosition } from './apiv2/v2.types';
+import { formatOpenPositions } from './helpers/formatter';
+import { fetchAccount } from './helpers/commandHandler';
 
 const startBot = () => {
   const client = new Discord.Client();
@@ -72,25 +75,50 @@ const start = async (client: {
       // .account
       // =====================================================
       if (msg.content === '.account') {
-        const fetchAccount = async () => {
-          try {
-            const data = await getAccountDetailV2();
-            const formattedData = formatAccount(data);
-            const {
-              totalAccountValue,
-              totalPositionSize,
-              collateral,
-              freeCollateral,
-              totalLeverage,
-            } = formattedData;
-            msg.channel.send(`
-            **💰: ${totalAccountValue}**\n**Total Collateral**: ${collateral}\n**Total Position Size**: ${totalPositionSize}\n**Free Collateral**: ${freeCollateral}\n**Leverage Used: **${totalLeverage}x\n
-          `);
-          } catch (error) {
-            console.log('API Error', error);
-          }
+        fetchAccount(msg);
+      }
+
+      // =====================================================
+      // GET ALL OPEN POSITIONS
+      // .positions
+      // =====================================================
+      if (msg.content === '.positions') {
+        // const fetchPositions = async () => {
+        //   const positionsData = await getOpenPositions(ftx);
+        //   let str = '';
+        //   positionsData.map((p: { ticker: string; side: string; costUsd: any; netSize: any; recentAverageOpenPrice: any; recentBreakEvenPrice: any; entryPrice: any; recentPnl: any; }) => {
+        //     const splitAsset = p.ticker.split('-');
+        //     const asset = splitAsset[0];
+
+        //     if (p.side === "LONG") {
+        //       const formattedCost = formatter.format(p.costUsd)
+        //       str += `**${longEmoji} ${p.ticker}**\n**Net Size**: ${p.netSize} ${asset}\n**Cost**: ${formattedCost}\n**Avg Entry**: ${p.recentAverageOpenPrice} | **B/E**: ${p.recentBreakEvenPrice}\n**Mark**: ${p.entryPrice}\n**uPnL**: ${p.recentPnl}\n\n`;
+        //     } else {
+        //       const formattedCost = formatter.format(p.costUsd)
+        //       str += `**${shortEmoji} ${p.ticker}**\n**Net Size**: ${p.netSize} ${asset}\n**Cost**: ${formattedCost}\n**Avg Entry**: ${p.recentAverageOpenPrice} | **B/E**: ${p.recentBreakEvenPrice}\n**Mark**: ${p.entryPrice}\n**uPnL**: ${p.recentPnl}\n\n`;
+        //     }
+        //   });
+
+        //   if (str) {
+        //     msg.channel.send(str);
+        //   } else {
+        //     msg.channel.send("No open positions");
+        //   }
+        // };
+
+        // importing this function does not work for some reason
+        // const formatOpenPositions = (data: OpenPosition[]): string => {
+        //   const { future } = data[0];
+        //   return future;
+        // };
+
+        const fetchPositions = async () => {
+          const data = await ftxClient.getPositions(true);
+          // console.log(data.result);
+          const test = formatOpenPositions(data.result);
+          console.log(test);
         };
-        fetchAccount();
+        fetchPositions();
       }
 
       // =====================================================
@@ -196,36 +224,6 @@ const start = async (client: {
       //   };
 
       //   requestWithdrawal();
-      // };
-
-      // =====================================================
-      // GET ALL OPEN POSITIONS
-      // .positions
-      // =====================================================
-      // if (msg.content === '.positions') {
-      //   const fetchPositions = async () => {
-      //     const positionsData = await getOpenPositions(ftx);
-      //     let str = '';
-      //     positionsData.map((p: { ticker: string; side: string; costUsd: any; netSize: any; recentAverageOpenPrice: any; recentBreakEvenPrice: any; entryPrice: any; recentPnl: any; }) => {
-      //       const splitAsset = p.ticker.split('-');
-      //       const asset = splitAsset[0];
-
-      //       if (p.side === "LONG") {
-      //         const formattedCost = formatter.format(p.costUsd)
-      //         str += `**${longEmoji} ${p.ticker}**\n**Net Size**: ${p.netSize} ${asset}\n**Cost**: ${formattedCost}\n**Avg Entry**: ${p.recentAverageOpenPrice} | **B/E**: ${p.recentBreakEvenPrice}\n**Mark**: ${p.entryPrice}\n**uPnL**: ${p.recentPnl}\n\n`;
-      //       } else {
-      //         const formattedCost = formatter.format(p.costUsd)
-      //         str += `**${shortEmoji} ${p.ticker}**\n**Net Size**: ${p.netSize} ${asset}\n**Cost**: ${formattedCost}\n**Avg Entry**: ${p.recentAverageOpenPrice} | **B/E**: ${p.recentBreakEvenPrice}\n**Mark**: ${p.entryPrice}\n**uPnL**: ${p.recentPnl}\n\n`;
-      //       }
-      //     });
-
-      //     if (str) {
-      //       msg.channel.send(str);
-      //     } else {
-      //       msg.channel.send("No open positions");
-      //     }
-      //   };
-      //   fetchPositions();
       // };
 
       // =====================================================

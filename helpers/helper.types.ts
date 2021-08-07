@@ -5,3 +5,7 @@ export interface AccountFormatted {
   freeCollateral: string;
   totalLeverage: string;
 }
+
+export interface OpenPositionsFormatted {
+  
+}
