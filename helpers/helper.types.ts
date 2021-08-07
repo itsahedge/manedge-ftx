@@ -9,12 +9,12 @@ export interface AccountFormatted {
 export interface OpenPositionsFormatted {
   ticker: string;
   side: string;
-  netSize: number;
+  netSize: string;
   cost: string;
   asset: string;
   entryPrice: number;
-  avgOpenPrice: number;
-  breakEvenPrice: number;
+  avgOpenPrice: string;
+  breakEvenPrice: string;
   markPrice: number;
   longOrderSize: number;
   shortOrderSize: number;

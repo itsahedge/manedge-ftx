@@ -70,9 +70,8 @@ var start = function (client) { return __awaiter(void 0, void 0, void 0, functio
             // let longEmoji = msg.guild.emojis.cache.find(
             //   (emoji) => emoji.name === 'long'
             // );
-            // const longEmoji = '<:long:838247076201627655>';
-            var longEmojiFromOther = '<:long:873659858283532320>';
-            var sniperEmoji = '<:pepe_sniper:873659469320577064>';
+            // has to be from the same server
+            var longEmoji = '<:long:838247076201627655>';
             var shortEmoji = '<:short:873659191141732372>';
             // let shortEmoji = msg.guild.emojis.cache.find(
             //   (emoji) => emoji.name === 'short'
@@ -124,7 +123,7 @@ var start = function (client) { return __awaiter(void 0, void 0, void 0, functio
                                 str = '';
                                 positions = formatter_1.formatOpenPositions(data.result);
                                 positions.map(function (x) {
-                                    str += "**" + (x.side === 'LONG' ? longEmojiFromOther : shortEmoji) + " " + x.ticker + "**\n**Net Size**: " + x.netSize + " " + x.asset + "\n**Cost**: " + x.cost + "\n**Avg Entry**: " + x.avgOpenPrice + " | **B/E**: " + x.breakEvenPrice + "\n**Mark**: " + x.entryPrice + "\n**uPnL**: " + x.unrealizedPnl + "\n\n";
+                                    str += "**" + (x.side === 'LONG' ? longEmoji : shortEmoji) + " " + x.ticker + "**\n**Net Size**: " + x.netSize + " " + x.asset + "\n**Mark**: " + x.entryPrice + "\n**Cost**: " + x.cost + "\n**Avg Entry**: " + x.avgOpenPrice + " | **B/E**: " + x.breakEvenPrice + "\n**uPnL**: " + x.unrealizedPnl + "\n\n";
                                 });
                                 console.log(positions);
                                 if (str) {

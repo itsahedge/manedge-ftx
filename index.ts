@@ -28,7 +28,6 @@ const startBot = () => {
 
   client.login(TOKEN);
   client.on('ready', () => {
-    let emojiTest = client.emojis.cache.find((e) => e.name === 'long');
     console.info(`Logged in as ${client.user.tag}!`);
     start(client);
   });
@@ -49,23 +48,8 @@ startBot();
 
 const start = async (client) => {
   client.on('message', (msg) => {
-    // move these into separate
-    // const emoji = client.emojis.cache.get('838247076201627655');
-    // const emojiTest = client.emojis.cache.get('838247076201627655');
-    // let emojiTest = client.emojis.cache.find((e) => e.name === 'long');
-
-    // let longEmoji = msg.guild.emojis.cache.find(
-    //   (emoji) => emoji.name === 'long'
-    // );
-
-    // const longEmoji = '<:long:838247076201627655>';
-    // const longEmojiFromOther = '<:long:873659858283532320>';
-    const sniperEmoji = '<:pepe_sniper:873659469320577064>';
+    const longEmoji = '<:long:838247076201627655>';
     const shortEmoji = '<:short:873659191141732372>';
-
-    // let shortEmoji = msg.guild.emojis.cache.find(
-    //   (emoji) => emoji.name === 'short'
-    // );
 
     // =====================================================
     // ACCOUNT DETAILS
@@ -80,57 +64,20 @@ const start = async (client) => {
     // .positions
     // =====================================================
     if (msg.content === '.positions') {
-      // const fetchPositions = async () => {
-      //   const positionsData = await getOpenPositions(ftx);
-      //   let str = '';
-      //   positionsData.map((p: { ticker: string; side: string; costUsd: any; netSize: any; recentAverageOpenPrice: any; recentBreakEvenPrice: any; entryPrice: any; recentPnl: any; }) => {
-      //     const splitAsset = p.ticker.split('-');
-      //     const asset = splitAsset[0];
-
-      //     if (p.side === "LONG") {
-      //       const formattedCost = formatter.format(p.costUsd)
-      //       str += `**${longEmoji} ${p.ticker}**\n**Net Size**: ${p.netSize} ${asset}\n**Cost**: ${formattedCost}\n**Avg Entry**: ${p.recentAverageOpenPrice} | **B/E**: ${p.recentBreakEvenPrice}\n**Mark**: ${p.entryPrice}\n**uPnL**: ${p.recentPnl}\n\n`;
-      //     } else {
-      //       const formattedCost = formatter.format(p.costUsd)
-      //       str += `**${shortEmoji} ${p.ticker}**\n**Net Size**: ${p.netSize} ${asset}\n**Cost**: ${formattedCost}\n**Avg Entry**: ${p.recentAverageOpenPrice} | **B/E**: ${p.recentBreakEvenPrice}\n**Mark**: ${p.entryPrice}\n**uPnL**: ${p.recentPnl}\n\n`;
-      //     }
-      //   });
-
-      //   if (str) {
-      //     msg.channel.send(str);
-      //   } else {
-      //     msg.channel.send("No open positions");
-      //   }
-      // };
-
-      // importing this function does not work for some reason
-      // const formatOpenPositions = (data: OpenPosition[]): string => {
-      //   const { future } = data[0];
-      //   return future;
-      // };
-
       const fetchPositions = async () => {
         const data = await ftxClient.getPositions(true);
-        // console.log(data);
-
         let str = '';
         const positions = formatOpenPositions(data.result);
 
-        const emojiList = msg.guild.emojis.cache
-          .map((emoji) => emoji.toString())
-          .join(' ');
-
         positions.map((x) => {
-          str += `**${x.side === 'LONG' ? sniperEmoji : shortEmoji} ${
+          str += `**${x.side === 'LONG' ? longEmoji : shortEmoji} ${
             x.ticker
-          }**\n**Net Size**: ${x.netSize} ${x.asset}\n**Cost**: ${
-            x.cost
-          }\n**Avg Entry**: ${x.avgOpenPrice} | **B/E**: ${
+          }**\n**Net Size**: ${x.netSize} ${x.asset}\n**Mark**: ${
+            x.entryPrice
+          }\n**Cost**: ${x.cost}\n**Avg Entry**: ${x.avgOpenPrice} | **B/E**: ${
             x.breakEvenPrice
-          }\n**Mark**: ${x.entryPrice}\n**uPnL**: ${x.unrealizedPnl}\n\n`;
+          }\n**uPnL**: ${x.unrealizedPnl}\n\n`;
         });
-
-        console.log(positions);
 
         if (str) {
           msg.channel.send(str);
