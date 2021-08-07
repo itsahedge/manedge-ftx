@@ -36,18 +36,31 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 exports.__esModule = true;
+var _ = require("lodash");
 // const Discord = require('discord.js');
 var _a = require('discord.js'), Client = _a.Client, Intents = _a.Intents;
 var client = new Client({ intents: [Intents.FLAGS.GUILDS] });
 require('dotenv').config();
 var config_1 = require("./config");
+// import {
+//   getAccountDetail,
+//   getBalances,
+//   getDeposit,
+//   getWithdrawal,
+//   getOpenPositions,
+//   getOpenOrders,
+//   getTriggerOrders,
+//   cancelAllOrders,
+//   placeTriggerOrders,
+//   cancelOrderById
+// } from './api/ftxApi';
+var requests_1 = require("./apiv2/requests");
 var formatter_1 = require("./helpers/formatter");
 var commandHandler_1 = require("./helpers/commandHandler");
 var startBot = function () {
     var TOKEN = process.env.TOKEN;
     client.login(TOKEN);
     client.on('ready', function () {
-        var emojiTest = client.emojis.cache.find(function (e) { return e.name === 'long'; });
         console.info("Logged in as " + client.user.tag + "!");
         start(client);
     });
@@ -63,19 +76,8 @@ startBot();
 var start = function (client) { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
         client.on('message', function (msg) {
-            // move these into separate
-            // const emoji = client.emojis.cache.get('838247076201627655');
-            // const emojiTest = client.emojis.cache.get('838247076201627655');
-            // let emojiTest = client.emojis.cache.find((e) => e.name === 'long');
-            // let longEmoji = msg.guild.emojis.cache.find(
-            //   (emoji) => emoji.name === 'long'
-            // );
-            // has to be from the same server
             var longEmoji = '<:long:838247076201627655>';
             var shortEmoji = '<:short:873659191141732372>';
-            // let shortEmoji = msg.guild.emojis.cache.find(
-            //   (emoji) => emoji.name === 'short'
-            // );
             // =====================================================
             // ACCOUNT DETAILS
             // .account
@@ -88,31 +90,6 @@ var start = function (client) { return __awaiter(void 0, void 0, void 0, functio
             // .positions
             // =====================================================
             if (msg.content === '.positions') {
-                // const fetchPositions = async () => {
-                //   const positionsData = await getOpenPositions(ftx);
-                //   let str = '';
-                //   positionsData.map((p: { ticker: string; side: string; costUsd: any; netSize: any; recentAverageOpenPrice: any; recentBreakEvenPrice: any; entryPrice: any; recentPnl: any; }) => {
-                //     const splitAsset = p.ticker.split('-');
-                //     const asset = splitAsset[0];
-                //     if (p.side === "LONG") {
-                //       const formattedCost = formatter.format(p.costUsd)
-                //       str += `**${longEmoji} ${p.ticker}**\n**Net Size**: ${p.netSize} ${asset}\n**Cost**: ${formattedCost}\n**Avg Entry**: ${p.recentAverageOpenPrice} | **B/E**: ${p.recentBreakEvenPrice}\n**Mark**: ${p.entryPrice}\n**uPnL**: ${p.recentPnl}\n\n`;
-                //     } else {
-                //       const formattedCost = formatter.format(p.costUsd)
-                //       str += `**${shortEmoji} ${p.ticker}**\n**Net Size**: ${p.netSize} ${asset}\n**Cost**: ${formattedCost}\n**Avg Entry**: ${p.recentAverageOpenPrice} | **B/E**: ${p.recentBreakEvenPrice}\n**Mark**: ${p.entryPrice}\n**uPnL**: ${p.recentPnl}\n\n`;
-                //     }
-                //   });
-                //   if (str) {
-                //     msg.channel.send(str);
-                //   } else {
-                //     msg.channel.send("No open positions");
-                //   }
-                // };
-                // importing this function does not work for some reason
-                // const formatOpenPositions = (data: OpenPosition[]): string => {
-                //   const { future } = data[0];
-                //   return future;
-                // };
                 var fetchPositions = function () { return __awaiter(void 0, void 0, void 0, function () {
                     var data, str, positions;
                     return __generator(this, function (_a) {
@@ -125,7 +102,6 @@ var start = function (client) { return __awaiter(void 0, void 0, void 0, functio
                                 positions.map(function (x) {
                                     str += "**" + (x.side === 'LONG' ? longEmoji : shortEmoji) + " " + x.ticker + "**\n**Net Size**: " + x.netSize + " " + x.asset + "\n**Mark**: " + x.entryPrice + "\n**Cost**: " + x.cost + "\n**Avg Entry**: " + x.avgOpenPrice + " | **B/E**: " + x.breakEvenPrice + "\n**uPnL**: " + x.unrealizedPnl + "\n\n";
                                 });
-                                console.log(positions);
                                 if (str) {
                                     msg.channel.send(str);
                                 }
@@ -139,33 +115,88 @@ var start = function (client) { return __awaiter(void 0, void 0, void 0, functio
                 fetchPositions();
             }
             // =====================================================
-            // BALANCES
-            // .account
+            // CANCEL ORDER BY ID or ALL ORDERS FOR A TICKER
+            // .cancel (orderId or ticker)
             // =====================================================
-            // if (msg.content === '.balances') {
-            //   const fetchBalances = async () => {
-            //     try {
-            //       const balancesData = await getBalances(ftx);
-            //       const { main } = balancesData; // main is main account
-            //       let str = '';
-            //       _.forEach(main, (balance) => {
-            //         const { coin, free, total, usdValue } = balance;
-            //         if (usdValue >= 1) {
-            //           const formattedUsdVal = formatter.format(usdValue);
-            //           str += `**[${coin}]** **Free**: ${free} | **Total**: ${total}\n**USD Value**: ${formattedUsdVal}\n\n`;
-            //         }
-            //       });
-            //       if (str) {
-            //         msg.channel.send(str);
-            //       } else {
-            //         msg.channel.send("No balance || Error");
-            //       }
-            //     } catch (error) {
-            //       console.log("API Error", error)
-            //     }
-            //   };
-            //   fetchBalances();
-            // };
+            if (msg.content.toLowerCase().startsWith('.cancel')) {
+                var inputStr = msg.content;
+                var parsed = _.split(inputStr, ' ', 2); // parsed Array
+                var orderId = parsed[1].toUpperCase();
+                var cancelOrder = function (id) { return __awaiter(void 0, void 0, void 0, function () {
+                    var orderToCancel, _a, error_1;
+                    return __generator(this, function (_b) {
+                        switch (_b.label) {
+                            case 0:
+                                _b.trys.push([0, 5, , 6]);
+                                if (!isNaN(id)) return [3 /*break*/, 2];
+                                return [4 /*yield*/, config_1.ftxClient.cancelAllOrders({ market: id })];
+                            case 1:
+                                _a = _b.sent();
+                                return [3 /*break*/, 4];
+                            case 2: return [4 /*yield*/, config_1.ftxClient.cancelOrder(id)];
+                            case 3:
+                                _a = _b.sent();
+                                _b.label = 4;
+                            case 4:
+                                orderToCancel = _a;
+                                if (orderToCancel) {
+                                    msg.channel.send(isNaN(id)
+                                        ? "Cancelling all orders for (" + id + ")"
+                                        : "Order queued for cancellation: (" + id + ")");
+                                }
+                                else {
+                                    msg.channel.send("No Trigger Orders for {ticker here}");
+                                }
+                                return [3 /*break*/, 6];
+                            case 5:
+                                error_1 = _b.sent();
+                                console.log('API Error', error_1);
+                                return [3 /*break*/, 6];
+                            case 6: return [2 /*return*/];
+                        }
+                    });
+                }); };
+                cancelOrder(orderId);
+            }
+            // =====================================================
+            // BALANCES
+            // .balances
+            // =====================================================
+            if (msg.content === '.balances') {
+                var fetchBalances = function () { return __awaiter(void 0, void 0, void 0, function () {
+                    var balancesData, formatted, str_1, error_2;
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0:
+                                _a.trys.push([0, 2, , 3]);
+                                return [4 /*yield*/, requests_1.getBalanceData()];
+                            case 1:
+                                balancesData = _a.sent();
+                                formatted = formatter_1.formatBalances(balancesData);
+                                str_1 = '';
+                                _.forEach(formatted, function (x) {
+                                    if (x.usdValue >= 1) {
+                                        var formattedUsdVal = formatter_1.formatter.format(x.usdValue);
+                                        str_1 += "**[" + x.coin + "]** **Free**: " + x.free + " | **Total**: " + x.total + "\n**USD Value**: " + formattedUsdVal + "\n\n";
+                                    }
+                                });
+                                if (str_1) {
+                                    msg.channel.send(str_1);
+                                }
+                                else {
+                                    msg.channel.send('No balance || Error');
+                                }
+                                return [3 /*break*/, 3];
+                            case 2:
+                                error_2 = _a.sent();
+                                console.log('API Error', error_2);
+                                return [3 /*break*/, 3];
+                            case 3: return [2 /*return*/];
+                        }
+                    });
+                }); };
+                fetchBalances();
+            }
             // =====================================================
             // DEPOSITS
             // .deposit usdt erc20
@@ -403,53 +434,6 @@ var start = function (client) { return __awaiter(void 0, void 0, void 0, functio
             //     };
             //     placeTriggerOrder();
             //   }
-            // }
-            // =====================================================
-            // CANCEL ALL ORDERS (TRIGGERS AND LIMITS)
-            // .del-all rune-perp
-            // =====================================================
-            // if (msg.content.toLowerCase().startsWith('.del-all')) {
-            //   const inputStr = msg.content;
-            //   const parsed = _.split(inputStr, ' ', 2); // parsed Array
-            //   const ticker = parsed[1];
-            //   console.log(ticker)
-            //   const cancelOrders = async (ticker: string) => {
-            //     try {
-            //       const orders = await cancelAllOrders(ftx, ticker);
-            //       console.log(orders)
-            //       if (orders) {
-            //         msg.channel.send(`Cancelled all Open Orders for ${ticker}`);
-            //       } else {
-            //         msg.channel.send(`No Trigger Orders for ${ticker}`)
-            //       }
-            //     } catch (error) {
-            //       console.log('API Error', error)
-            //     }
-            //   }
-            //   cancelOrders(ticker)
-            // }
-            // =====================================================
-            // CANCEL ORDER BY ID
-            // .cancel 21589500506
-            // =====================================================
-            // if (msg.content.toLowerCase().startsWith('.cancel')) {
-            //   const inputStr = msg.content;
-            //   const parsed = _.split(inputStr, ' ', 2); // parsed Array
-            //   const id = parsed[1];
-            //   const cancelOrder = async (id) => {
-            //     try {
-            //       const orders = await cancelOrderById(ftx, id);
-            //       console.log(orders)
-            //       if (orders) {
-            //         msg.channel.send(`${orders.message}`);
-            //       } else {
-            //         msg.channel.send(`No Trigger Orders for ${ticker}`)
-            //       }
-            //     } catch (error) {
-            //       console.log('API Error', error)
-            //     }
-            //   }
-            //   cancelOrder(id)
             // }
         });
         return [2 /*return*/];

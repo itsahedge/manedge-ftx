@@ -1,8 +1,8 @@
 import * as _ from 'lodash';
-import { Account, OpenPosition } from '../apiv2/v2.types';
+import { Account, Balances, OpenPosition } from '../apiv2/v2.types';
 import { AccountFormatted, OpenPositionsFormatted } from './helper.types';
 
-const formatter = new Intl.NumberFormat('en-US', {
+export const formatter = new Intl.NumberFormat('en-US', {
   style: 'currency',
   currency: 'USD',
   minimumFractionDigits: 2,
@@ -30,6 +30,14 @@ export const formatAccount = (data: Account): AccountFormatted => {
     freeCollateral: formattedFreeCollateral,
     totalLeverage,
   };
+};
+
+export const formatBalances = (data: Balances[]): Balances[] => {
+  const balances = _.filter(data, function (b) {
+    return b.total !== 0;
+  });
+
+  return balances;
 };
 
 export const formatOpenPositions = (

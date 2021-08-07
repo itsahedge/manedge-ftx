@@ -5,6 +5,15 @@ export interface Account {
   freeCollateral: number;
 }
 
+export interface Balances {
+  coin: string;
+  total: number;
+  free: number;
+  availableWithoutBorrow: number;
+  usdValue: number;
+  spotBorrow: number;
+}
+
 export interface OpenPosition {
   future: string;
   size: number;

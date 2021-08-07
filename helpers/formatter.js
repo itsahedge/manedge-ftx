@@ -1,18 +1,18 @@
 "use strict";
 exports.__esModule = true;
-exports.formatOpenPositions = exports.formatAccount = void 0;
+exports.formatOpenPositions = exports.formatBalances = exports.formatAccount = exports.formatter = void 0;
 var _ = require("lodash");
-var formatter = new Intl.NumberFormat('en-US', {
+exports.formatter = new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
     minimumFractionDigits: 2
 });
 var formatAccount = function (data) {
     var totalAccountValue = data.totalAccountValue, totalPositionSize = data.totalPositionSize, collateral = data.collateral, freeCollateral = data.freeCollateral;
-    var formattedTotalAccountValue = formatter.format(totalAccountValue);
-    var formattedTotalPositionSize = formatter.format(totalPositionSize);
-    var formattedTotalCollateral = formatter.format(collateral);
-    var formattedFreeCollateral = formatter.format(freeCollateral);
+    var formattedTotalAccountValue = exports.formatter.format(totalAccountValue);
+    var formattedTotalPositionSize = exports.formatter.format(totalPositionSize);
+    var formattedTotalCollateral = exports.formatter.format(collateral);
+    var formattedFreeCollateral = exports.formatter.format(freeCollateral);
     // total position size / collateral = current leverge used
     var collateralFormatted = Number(collateral.toFixed(2));
     var totalLeverage = Number(totalPositionSize / collateralFormatted).toFixed(2);
@@ -25,6 +25,13 @@ var formatAccount = function (data) {
     };
 };
 exports.formatAccount = formatAccount;
+var formatBalances = function (data) {
+    var balances = _.filter(data, function (b) {
+        return b.total !== 0;
+    });
+    return balances;
+};
+exports.formatBalances = formatBalances;
 var formatOpenPositions = function (data) {
     var currentPositions = _.filter(data, function (p) {
         return p.size !== 0;
@@ -33,7 +40,7 @@ var formatOpenPositions = function (data) {
             ticker: o.future,
             side: o.side === 'buy' ? 'LONG' : 'SHORT',
             netSize: o.netSize.toLocaleString(),
-            cost: formatter.format(o.cost),
+            cost: exports.formatter.format(o.cost),
             asset: o.future.split('-')[0],
             entryPrice: o.entryPrice,
             avgOpenPrice: Number(o.recentAverageOpenPrice).toFixed(4),
@@ -42,7 +49,7 @@ var formatOpenPositions = function (data) {
             longOrderSize: o.longOrderSize,
             shortOrderSize: o.shortOrderSize,
             estimatedLiquidationPrice: o.estimatedLiquidationPrice,
-            unrealizedPnl: formatter.format(o.recentPnl)
+            unrealizedPnl: exports.formatter.format(o.recentPnl)
         };
     });
     return currentPositions;

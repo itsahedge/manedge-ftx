@@ -36,7 +36,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 exports.__esModule = true;
-exports.getAccountData = void 0;
+exports.getBalanceData = exports.getAccountData = void 0;
 var config_1 = require("../config");
 var getAccountData = function () { return __awaiter(void 0, void 0, void 0, function () {
     var response, _a, totalAccountValue, totalPositionSize, collateral, freeCollateral;
@@ -51,3 +51,16 @@ var getAccountData = function () { return __awaiter(void 0, void 0, void 0, func
     });
 }); };
 exports.getAccountData = getAccountData;
+var getBalanceData = function () { return __awaiter(void 0, void 0, void 0, function () {
+    var response, balances;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0: return [4 /*yield*/, config_1.ftxClient.getBalances()];
+            case 1:
+                response = _a.sent();
+                balances = response.result;
+                return [2 /*return*/, balances];
+        }
+    });
+}); };
+exports.getBalanceData = getBalanceData;

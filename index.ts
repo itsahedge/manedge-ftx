@@ -18,9 +18,13 @@ import { ftxClient } from './config';
 //   placeTriggerOrders,
 //   cancelOrderById
 // } from './api/ftxApi';
-// import { getOpenPositionData } from './apiv2/requests';
+import { getBalanceData } from './apiv2/requests';
 import { Account, OpenPosition } from './apiv2/v2.types';
-import { formatOpenPositions } from './helpers/formatter';
+import {
+  formatter,
+  formatOpenPositions,
+  formatBalances,
+} from './helpers/formatter';
 import { fetchAccount } from './helpers/commandHandler';
 
 const startBot = () => {
@@ -89,38 +93,67 @@ const start = async (client) => {
     }
 
     // =====================================================
-    // BALANCES
-    // .account
+    // CANCEL ORDER BY ID or ALL ORDERS FOR A TICKER
+    // .cancel (orderId or ticker)
     // =====================================================
-    // if (msg.content === '.balances') {
-    //   const fetchBalances = async () => {
-    //     try {
-    //       const balancesData = await getBalances(ftx);
-    //       const { main } = balancesData; // main is main account
+    if (msg.content.toLowerCase().startsWith('.cancel')) {
+      const inputStr = msg.content;
+      const parsed = _.split(inputStr, ' ', 2); // parsed Array
+      const orderId = parsed[1].toUpperCase();
 
-    //       let str = '';
+      const cancelOrder = async (id: any) => {
+        try {
+          // check for id is a ticker or valid number
+          const orderToCancel = isNaN(id)
+            ? await ftxClient.cancelAllOrders({ market: id })
+            : await ftxClient.cancelOrder(id);
 
-    //       _.forEach(main, (balance) => {
-    //         const { coin, free, total, usdValue } = balance;
+          if (orderToCancel) {
+            msg.channel.send(
+              isNaN(id)
+                ? `Cancelling all orders for (${id})`
+                : `Order queued for cancellation: (${id})`
+            );
+          } else {
+            msg.channel.send(`No Trigger Orders for {ticker here}`);
+          }
+        } catch (error) {
+          console.log('API Error', error);
+        }
+      };
+      cancelOrder(orderId);
+    }
 
-    //         if (usdValue >= 1) {
-    //           const formattedUsdVal = formatter.format(usdValue);
-    //           str += `**[${coin}]** **Free**: ${free} | **Total**: ${total}\n**USD Value**: ${formattedUsdVal}\n\n`;
-    //         }
-    //       });
+    // =====================================================
+    // BALANCES
+    // .balances
+    // =====================================================
+    if (msg.content === '.balances') {
+      const fetchBalances = async () => {
+        try {
+          const balancesData = await getBalanceData();
+          const formatted = formatBalances(balancesData);
+          let str = '';
 
-    //       if (str) {
-    //         msg.channel.send(str);
-    //       } else {
-    //         msg.channel.send("No balance || Error");
-    //       }
-    //     } catch (error) {
-    //       console.log("API Error", error)
-    //     }
-    //   };
+          _.forEach(formatted, (x) => {
+            if (x.usdValue >= 1) {
+              const formattedUsdVal = formatter.format(x.usdValue);
+              str += `**[${x.coin}]** **Free**: ${x.free} | **Total**: ${x.total}\n**USD Value**: ${formattedUsdVal}\n\n`;
+            }
+          });
 
-    //   fetchBalances();
-    // };
+          if (str) {
+            msg.channel.send(str);
+          } else {
+            msg.channel.send('No balance || Error');
+          }
+        } catch (error) {
+          console.log('API Error', error);
+        }
+      };
+
+      fetchBalances();
+    }
 
     // =====================================================
     // DEPOSITS
@@ -389,37 +422,5 @@ const start = async (client) => {
     //     placeTriggerOrder();
     //   }
     // }
-
-    // =====================================================
-    // CANCEL ORDER BY ID or ALL ORDERS FOR A TICKER
-    // .cancel (orderId or ticker)
-    // =====================================================
-    if (msg.content.toLowerCase().startsWith('.cancel')) {
-      const inputStr = msg.content;
-      const parsed = _.split(inputStr, ' ', 2); // parsed Array
-      const orderId = parsed[1].toUpperCase();
-
-      const cancelOrder = async (id: any) => {
-        try {
-          // check for id is a ticker or valid number
-          const orderToCancel = isNaN(id)
-            ? await ftxClient.cancelAllOrders({ market: id })
-            : await ftxClient.cancelOrder(id);
-
-          if (orderToCancel) {
-            msg.channel.send(
-              isNaN(id)
-                ? `Cancelling all orders for (${id})`
-                : `Order queued for cancellation: (${id})`
-            );
-          } else {
-            msg.channel.send(`No Trigger Orders for {ticker here}`);
-          }
-        } catch (error) {
-          console.log('API Error', error);
-        }
-      };
-      cancelOrder(orderId);
-    }
   });
 };
