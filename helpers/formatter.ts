@@ -1,6 +1,10 @@
 import * as _ from 'lodash';
-import { Account, Balances, OpenPosition } from '../apiv2/v2.types';
-import { AccountFormatted, OpenPositionsFormatted } from './helper.types';
+import { Account, Balances, OpenPosition, Orders } from '../apiv2/v2.types';
+import {
+  AccountFormatted,
+  OpenPositionsFormatted,
+  OrdersFormatted,
+} from './helper.types';
 
 export const formatter = new Intl.NumberFormat('en-US', {
   style: 'currency',
@@ -64,4 +68,20 @@ export const formatOpenPositions = (
   });
 
   return currentPositions;
+};
+
+export const formatOrders = (data: Orders[]): OrdersFormatted[] => {
+  return _.map(data, (o) => {
+    return {
+      id: o.id,
+      market: o.market,
+      status: o.status,
+      type: o.type.toUpperCase(),
+      side: o.side.toUpperCase(),
+      price: o.price,
+      size: o.size,
+      filledSize: o.filledSize,
+      remainingSize: o.remainingSize,
+    };
+  });
 };

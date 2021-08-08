@@ -1,6 +1,6 @@
 "use strict";
 exports.__esModule = true;
-exports.formatOpenPositions = exports.formatBalances = exports.formatAccount = exports.formatter = void 0;
+exports.formatOrders = exports.formatOpenPositions = exports.formatBalances = exports.formatAccount = exports.formatter = void 0;
 var _ = require("lodash");
 exports.formatter = new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -55,3 +55,19 @@ var formatOpenPositions = function (data) {
     return currentPositions;
 };
 exports.formatOpenPositions = formatOpenPositions;
+var formatOrders = function (data) {
+    return _.map(data, function (o) {
+        return {
+            id: o.id,
+            market: o.market,
+            status: o.status,
+            type: o.type.toUpperCase(),
+            side: o.side.toUpperCase(),
+            price: o.price,
+            size: o.size,
+            filledSize: o.filledSize,
+            remainingSize: o.remainingSize
+        };
+    });
+};
+exports.formatOrders = formatOrders;

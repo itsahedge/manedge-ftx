@@ -18,11 +18,16 @@ import { ftxClient } from './config';
 //   placeTriggerOrders,
 //   cancelOrderById
 // } from './api/ftxApi';
-import { getBalanceData } from './apiv2/requests';
+import {
+  getBalanceData,
+  getOrdersData,
+  placeLimitOrder,
+} from './apiv2/requests';
 import { Account, OpenPosition } from './apiv2/v2.types';
 import {
   formatter,
   formatOpenPositions,
+  formatOrders,
   formatBalances,
 } from './helpers/formatter';
 import { fetchAccount } from './helpers/commandHandler';
@@ -51,7 +56,7 @@ const startBot = () => {
 startBot();
 
 const start = async (client) => {
-  client.on('message', (msg) => {
+  client.on('message', async (msg) => {
     const longEmoji = '<:long:838247076201627655>';
     const shortEmoji = '<:short:873659191141732372>';
 
@@ -76,11 +81,11 @@ const start = async (client) => {
         positions.map((x) => {
           str += `**${x.side === 'LONG' ? longEmoji : shortEmoji} ${
             x.ticker
-          }**\n**Net Size**: ${x.netSize} ${x.asset}\n**Mark**: ${
-            x.entryPrice
-          }\n**Cost**: ${x.cost}\n**Avg Entry**: ${x.avgOpenPrice} | **B/E**: ${
-            x.breakEvenPrice
-          }\n**uPnL**: ${x.unrealizedPnl}\n\n`;
+          }**\n**Net Size**: ${x.netSize} ${x.asset}\n**Cost**: ${
+            x.cost
+          }\n**Mark**: ${x.entryPrice}\n**Avg Entry**: ${
+            x.avgOpenPrice
+          } | **B/E**: ${x.breakEvenPrice}\n**uPnL**: ${x.unrealizedPnl}\n\n`;
         });
 
         if (str) {
@@ -95,33 +100,39 @@ const start = async (client) => {
     // =====================================================
     // CANCEL ORDER BY ID or ALL ORDERS FOR A TICKER
     // .cancel (orderId or ticker)
+    // TODO: cancel ALL
     // =====================================================
     if (msg.content.toLowerCase().startsWith('.cancel')) {
       const inputStr = msg.content;
       const parsed = _.split(inputStr, ' ', 2); // parsed Array
-      const orderId = parsed[1].toUpperCase();
 
-      const cancelOrder = async (id: any) => {
-        try {
-          // check for id is a ticker or valid number
-          const orderToCancel = isNaN(id)
-            ? await ftxClient.cancelAllOrders({ market: id })
-            : await ftxClient.cancelOrder(id);
+      if (parsed.length < 2) {
+        msg.channel.send('Incorrect command format.');
+        return null;
+      } else {
+        const orderId = parsed[1].toUpperCase();
+        const cancelOrder = async (id: any) => {
+          try {
+            // check for id is a ticker or valid number
+            const orderToCancel = isNaN(id)
+              ? await ftxClient.cancelAllOrders({ market: id })
+              : await ftxClient.cancelOrder(id);
 
-          if (orderToCancel) {
-            msg.channel.send(
-              isNaN(id)
-                ? `Cancelling all orders for (${id})`
-                : `Order queued for cancellation: (${id})`
-            );
-          } else {
-            msg.channel.send(`No Trigger Orders for {ticker here}`);
+            if (orderToCancel) {
+              msg.channel.send(
+                isNaN(id)
+                  ? `Cancelling all orders for (${id})`
+                  : `Order queued for cancellation: (${id})`
+              );
+            } else {
+              msg.channel.send(`No Trigger Orders for {ticker here}`);
+            }
+          } catch (error) {
+            console.log('API Error', error);
           }
-        } catch (error) {
-          console.log('API Error', error);
-        }
-      };
-      cancelOrder(orderId);
+        };
+        cancelOrder(orderId);
+      }
     }
 
     // =====================================================
@@ -259,33 +270,41 @@ const start = async (client) => {
     // GET OPEN ORDERS
     // .orders btc-perp
     // =====================================================
-    // if (msg.content.toLowerCase().startsWith('.orders')) {
-    //   const inputStr = msg.content.toUpperCase();
-    //   const parsed = _.split(inputStr, ' ', 2); // parsed Array
-    //   const ticker = parsed[1]; // rune-perp
-    //   const fetchOpenOrders = async (ticker) => {
-    //     try {
-    //       const openOrdersData = await getOpenOrders(ftx, ticker);
+    if (msg.content.toLowerCase().startsWith('.orders')) {
+      const inputStr = msg.content.toUpperCase();
+      const parsed = _.split(inputStr, ' ', 2); // parsed Array
+      const ticker = parsed[1]; // rune-perp
+      const fetchOpenOrders = async (ticker) => {
+        try {
+          // const openOrdersData = await getOpenOrders(ftx, ticker);
+          const openOrdersData = await getOrdersData(ticker);
 
-    //       let str = '';
-    //       let id = ''
-    //       openOrdersData.map((p) => {
-    //         str += `**Pair: **${p.market}\n**${p.type}** (${p.status})\n**Side: **${p.side}\n**Price: **$${p.price}\n**Size: **${p.size} ${p.market} | remaining: ${p.remainingSize} \n\n`;
-    //         id += `${p.id}`
-    //       });
+          const formatted = formatOrders(openOrdersData);
+          console.log(formatted);
 
-    //       if (str) {
-    //         msg.channel.send(id);
-    //         msg.channel.send(str);
-    //       } else {
-    //         msg.channel.send(`No Open Orders for ${ticker}`)
-    //       }
-    //     } catch (error) {
-    //       console.log('API Error', error)
-    //     }
-    //   };
-    //   fetchOpenOrders(ticker);
-    // }
+          // let id = '';
+          // openOrdersData.map((p) => {
+          //   str += `**Pair: **${p.market}\n**${p.type}** (${p.status})\n**Side: **${p.side}\n**Price: **$${p.price}\n**Size: **${p.size} ${p.market} | remaining: ${p.remainingSize} \n\n`;
+          //   id += `${p.id}`;
+          // });
+
+          let str = '';
+
+          _.forEach(formatted, (o) => {
+            str += `✏️ (Order) ${o.market}: ${o.type} ${o.side} @${o.price} (${o.remainingSize} of ${o.size}) (ID ${o.id}) - ${o.status} \n`;
+          });
+
+          if (str) {
+            msg.channel.send(str);
+          } else {
+            msg.channel.send(`No open orders for ${ticker}`);
+          }
+        } catch (error) {
+          console.log('API Error', error);
+        }
+      };
+      fetchOpenOrders(ticker);
+    }
 
     // =====================================================
     // PLACE MARKET ORDERS
@@ -322,51 +341,36 @@ const start = async (client) => {
     // PLACE LIMIT ORDERS
     // .limit sell RUNE-PERP 1 3
     // =====================================================
-    // if (msg.content.toLowerCase().startsWith('.limit')) {
-    //   const inputStr = msg.content;
-    //   const parsed = _.split(inputStr, ' ', 5); // parsed Array
+    if (msg.content.toLowerCase().startsWith('.limit')) {
+      const inputStr = msg.content;
+      const parsed = _.split(inputStr, ' ', 5); // parsed Array
 
-    //   const side = parsed[1]; // buy or sell
-    //   const pair = parsed[2]; // rune-perp
-    //   const size = parsed[3]; // 1 RUNE
-    //   const price = parsed[4] // price (if not provided to null for market?)
-    //   const newSize = parseFloat(size);
-    //   const newPrice = parseFloat(price);
+      const sideDirection = parsed[1]; // buy or sell
+      const ticker = parsed[2]; // rune-perp
+      const size = parsed[3]; // 1 RUNE
+      const price = parsed[4]; // price (if not provided to null for market?)
+      const newSize = parseFloat(size);
+      const newPrice = parseFloat(price);
 
-    //   if (parsed.length < 5) {
-    //     msg.channel.send('Incorrect command format.');
-    //     return null
-    //   } else {
-    //     const data = {
-    //       market: pair,
-    //       side: side, // buy or sell
-    //       price: newPrice, // formatted
-    //       type: 'limit',
-    //       size: newSize, // foramtted
-    //     };
-    //     const placeLimitOrder = async () => {
-    //       try {
-    //         const resp = await ftx.request({
-    //           method: 'POST',
-    //           path: '/orders',
-    //           data: data,
-    //         });
-
-    //         const { result } = resp;
-
-    //         if (result) {
-    //           console.log(result)
-    //           msg.channel.send('Placed limit order');
-    //         } else {
-    //           msg.channel.send(`Something went wrong.`)
-    //         }
-    //       } catch (error) {
-    //         console.log(error)
-    //       }
-    //     };
-    //     placeLimitOrder();
-    //   }
-    // }
+      if (parsed.length < 5) {
+        msg.channel.send('Incorrect command format.');
+        return null;
+      } else {
+        const data = {
+          market: ticker,
+          side: sideDirection, // buy or sell
+          price: newPrice, // formatted
+          type: 'limit',
+          size: newSize, // foramtted
+        };
+        const placeOrder = await placeLimitOrder(data);
+        const { id, status, market, side, price, type, size } = placeOrder;
+        msg.channel.send(`${
+          side.toUpperCase() === 'SELL' ? '⤵️' : '⤴️'
+        } (Order) ${market}: ${type} ${side} @${price} (${size}) (ID ${id}) - ${status} 
+        `);
+      }
+    }
 
     // =====================================================
     // PLACE TRIGGER ORDERS (STOPS)

@@ -36,7 +36,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 exports.__esModule = true;
-exports.getBalanceData = exports.getAccountData = void 0;
+exports.placeLimitOrder = exports.getOrdersData = exports.getBalanceData = exports.getAccountData = void 0;
 var config_1 = require("../config");
 var getAccountData = function () { return __awaiter(void 0, void 0, void 0, function () {
     var response, _a, totalAccountValue, totalPositionSize, collateral, freeCollateral;
@@ -64,3 +64,44 @@ var getBalanceData = function () { return __awaiter(void 0, void 0, void 0, func
     });
 }); };
 exports.getBalanceData = getBalanceData;
+var getOrdersData = function (ticker) { return __awaiter(void 0, void 0, void 0, function () {
+    var response, orders;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0: return [4 /*yield*/, config_1.ftxClient.getOpenOrders(ticker)];
+            case 1:
+                response = _a.sent();
+                orders = response.result;
+                return [2 /*return*/, orders];
+        }
+    });
+}); };
+exports.getOrdersData = getOrdersData;
+var placeLimitOrder = function (data) { return __awaiter(void 0, void 0, void 0, function () {
+    var response, _a, id, status_1, market, side, price, type, size, error_1;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
+            case 0:
+                _b.trys.push([0, 2, , 3]);
+                return [4 /*yield*/, config_1.ftxClient.placeOrder(data)];
+            case 1:
+                response = _b.sent();
+                _a = response.result, id = _a.id, status_1 = _a.status, market = _a.market, side = _a.side, price = _a.price, type = _a.type, size = _a.size;
+                return [2 /*return*/, {
+                        id: id,
+                        status: status_1,
+                        market: market,
+                        side: side.toUpperCase(),
+                        price: price,
+                        type: type.toUpperCase(),
+                        size: size
+                    }];
+            case 2:
+                error_1 = _b.sent();
+                console.error(error_1);
+                return [3 /*break*/, 3];
+            case 3: return [2 /*return*/];
+        }
+    });
+}); };
+exports.placeLimitOrder = placeLimitOrder;

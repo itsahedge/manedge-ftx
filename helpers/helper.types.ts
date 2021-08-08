@@ -21,3 +21,15 @@ export interface OpenPositionsFormatted {
   estimatedLiquidationPrice: number;
   unrealizedPnl: string;
 }
+
+export interface OrdersFormatted {
+  id: number;
+  market: string;
+  type: string;
+  side: string;
+  price: number;
+  size: number;
+  status: string;
+  filledSize: number;
+  remainingSize: number;
+}

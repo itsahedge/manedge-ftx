@@ -36,3 +36,23 @@ export interface OpenPosition {
   cumulativeBuySize: number;
   cumulativeSellSize: number;
 }
+
+export interface Orders {
+  id: number;
+  clientId: string;
+  market: string;
+  type: string;
+  side: string;
+  price: number;
+  size: number;
+  status: string;
+  filledSize: number;
+  remainingSize: number;
+  reduceOnly: false;
+  liquidation: false;
+  avgFillPrice: null;
+  postOnly: false;
+  ioc: false;
+  createdAt: string;
+  future: string;
+}
