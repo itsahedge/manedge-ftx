@@ -9,6 +9,7 @@ import {
   getBalanceData,
   getOrdersData,
   placeLimitOrder,
+  placeMarketOrder,
 } from './apiv2/requests';
 import {
   formatter,
@@ -301,26 +302,33 @@ const start = async (client) => {
       const parsed = _.split(inputStr, ' ', 5); // parsed Array
 
       const sideDirection = parsed[1]; // buy or sell
-      const pair = parsed[2]; // btc-perp or` ftt/usd
+      const ticker = parsed[2]; // btc-perp or` ftt/usd
       const sizeAmount = parseFloat(parsed[3]);
 
-      const placeMarketOrder = async () => {
+      const marketOrder = async () => {
         try {
-          const response = await ftxClient.placeOrder({
-            market: pair,
+          const data = {
+            type: 'market',
+            market: ticker,
             side: sideDirection,
-            price: null,
+            price: null, // for market orders
             size: sizeAmount,
-          });
+          };
+          // const response = await ftxClient.placeOrder(data);
+          const placeOrder = await placeMarketOrder(data);
 
-          const { market, side, size, type } = response.result;
-          msg.channel.send(`${type}: ${side.toUpperCase()} ${market} ${size} `);
+          const { id, status, type, market, side, size } = placeOrder;
+
+          msg.channel.send(`${
+            side.toUpperCase() === 'SELL' ? '⤵️' : '⤴️'
+          } (Order) ${market}: ${type.toUpperCase()} ${side.toUpperCase()} ${size} (ID ${id}) - ${status} 
+          `);
         } catch (error) {
           console.error(error);
           msg.channel.send('format not correct');
         }
       };
-      placeMarketOrder();
+      marketOrder();
     }
 
     // =====================================================
@@ -353,7 +361,7 @@ const start = async (client) => {
         const { id, status, market, side, price, type, size } = placeOrder;
         msg.channel.send(`${
           side.toUpperCase() === 'SELL' ? '⤵️' : '⤴️'
-        } (Order) ${market}: ${type} ${side} ${size} @${price} (ID ${id}) - ${status} 
+        } (Order) ${market}: ${type.toUpperCase()} ${side.toUpperCase()} ${size} @${price} (ID ${id}) - ${status} 
         `);
       }
     }
