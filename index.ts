@@ -263,18 +263,8 @@ const start = async (client) => {
       const ticker = parsed[1]; // rune-perp
       const fetchOpenOrders = async (ticker) => {
         try {
-          // const openOrdersData = await getOpenOrders(ftx, ticker);
           const openOrdersData = await getOrdersData(ticker);
-
           const formatted = formatOrders(openOrdersData);
-          console.log(formatted);
-
-          // let id = '';
-          // openOrdersData.map((p) => {
-          //   str += `**Pair: **${p.market}\n**${p.type}** (${p.status})\n**Side: **${p.side}\n**Price: **$${p.price}\n**Size: **${p.size} ${p.market} | remaining: ${p.remainingSize} \n\n`;
-          //   id += `${p.id}`;
-          // });
-
           let str = '';
 
           _.forEach(formatted, (o) => {
@@ -284,7 +274,9 @@ const start = async (client) => {
           if (str) {
             msg.channel.send(str);
           } else {
-            msg.channel.send(`No open orders for ${ticker}`);
+            msg.channel.send(
+              ` No open orders ${ticker ? `for ${ticker}` : ''} `
+            );
           }
         } catch (error) {
           console.log('API Error', error);
