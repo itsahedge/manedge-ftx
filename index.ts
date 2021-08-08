@@ -108,11 +108,11 @@ const start = async (client) => {
             if (orderToCancel) {
               msg.channel.send(
                 isNaN(id)
-                  ? `Cancelling all orders for (${id})`
-                  : `Order queued for cancellation: (${id})`
+                  ? `⌀ Cancelling all orders for ${id}`
+                  : `⌀ Order queued for cancellation: (ID ${id})`
               );
             } else {
-              msg.channel.send(`No Trigger Orders for {ticker here}`);
+              msg.channel.send(`Incorrect cancel command`);
             }
           } catch (error) {
             console.log('API Error', error);
