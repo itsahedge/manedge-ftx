@@ -367,7 +367,7 @@ const start = async (client) => {
         const { id, status, market, side, price, type, size } = placeOrder;
         msg.channel.send(`${
           side.toUpperCase() === 'SELL' ? '⤵️' : '⤴️'
-        } (Order) ${market}: ${type} ${side} @${price} (${size}) (ID ${id}) - ${status} 
+        } (Order) ${market}: ${type} ${side} ${size} @${price} (ID ${id}) - ${status} 
         `);
       }
     }
