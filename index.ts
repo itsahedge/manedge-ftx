@@ -66,7 +66,7 @@ const start = async (client) => {
         const positions = formatOpenPositions(data.result);
 
         positions.map((x) => {
-          str += `**${x.side === 'LONG' ? '⤴️' : '⤵️'} ${
+          str += `**${x.side === 'LONG' ? '🟢' : '🔴'} ${
             x.ticker
           }**\n**Net Size**: ${x.netSize} ${x.asset}\n**Cost**: ${
             x.cost
