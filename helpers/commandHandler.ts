@@ -17,7 +17,7 @@ export const fetchAccount = async (msg: {
       totalLeverage,
     } = formattedData;
     msg.channel.send(`
-    **💰: ${totalAccountValue}**\n**Total Collateral**: ${collateral}\n**Total Position Size**: ${totalPositionSize}\n**Free Collateral**: ${freeCollateral}\n**Leverage Used: **${totalLeverage}x\n
+    **💰: ${totalAccountValue}**\n**Total Collateral**: ${collateral}\n**Free Collateral**: ${freeCollateral}\n**Total Position Size**: ${totalPositionSize}\n**Leverage Used: **${totalLeverage}x\n
   `);
   } catch (error) {
     console.log('API Error', error);
