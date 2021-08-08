@@ -32,6 +32,26 @@ interface LimitOrder {
   size: number;
 }
 
+interface MarketOrder {
+  id?: number;
+  status?: string;
+  type: string;
+  market: string;
+  side: string;
+  price?: null;
+  size: number;
+}
+
+export const placeMarketOrder = async (data: MarketOrder): Promise<any> => {
+  try {
+    const response = await ftxClient.placeOrder(data);
+    const { id, status, type, market, side, size } = response.result;
+    return { id, status, type, market, side, size };
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 export const placeLimitOrder = async (
   data: LimitOrder
 ): Promise<LimitOrder> => {
@@ -42,9 +62,9 @@ export const placeLimitOrder = async (
       id,
       status,
       market,
-      side: side.toUpperCase(),
+      side,
       price,
-      type: type.toUpperCase(),
+      type,
       size,
     };
   } catch (error) {
