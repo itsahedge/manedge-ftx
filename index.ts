@@ -1,29 +1,15 @@
 import * as _ from 'lodash';
-// const Discord = require('discord.js');
 const { Client, Intents } = require('discord.js');
 const client = new Client({ intents: [Intents.FLAGS.GUILDS] });
 
 require('dotenv').config();
 import { ftxClient } from './config';
 
-// import {
-//   getAccountDetail,
-//   getBalances,
-//   getDeposit,
-//   getWithdrawal,
-//   getOpenPositions,
-//   getOpenOrders,
-//   getTriggerOrders,
-//   cancelAllOrders,
-//   placeTriggerOrders,
-//   cancelOrderById
-// } from './api/ftxApi';
 import {
   getBalanceData,
   getOrdersData,
   placeLimitOrder,
 } from './apiv2/requests';
-import { Account, OpenPosition } from './apiv2/v2.types';
 import {
   formatter,
   formatOpenPositions,
