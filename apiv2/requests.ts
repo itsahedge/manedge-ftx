@@ -16,6 +16,24 @@ export const getBalanceData = async (): Promise<Balances[]> => {
   return balances;
 };
 
+interface DepositAddress {
+  coin: string;
+  method?: string;
+}
+
+interface DepositAddressResponse {
+  address: string;
+  method: string;
+}
+
+export const getDepositAddress = async (
+  data: DepositAddress
+): Promise<DepositAddressResponse> => {
+  const response = await ftxClient.getDepositAddress(data);
+  const depositAddress: DepositAddressResponse = response.result;
+  return depositAddress;
+};
+
 export const getOrdersData = async (ticker: string): Promise<Orders[]> => {
   const response = await ftxClient.getOpenOrders(ticker);
   const orders: Orders[] = response.result;
