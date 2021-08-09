@@ -7,6 +7,7 @@ import { ftxClient } from './config';
 
 import {
   getBalanceData,
+  getDepositAddress,
   getOrdersData,
   placeLimitOrder,
   placeMarketOrder,
@@ -157,37 +158,41 @@ const start = async (client) => {
     // DEPOSITS
     // .deposit usdt erc20
     // =====================================================
-    // if (msg.content.toLowerCase().startsWith('.deposit')){
-    //   const inputStr = msg.content;
-    //   const parsed = _.split(inputStr, ' ', 3);
-    //   const coin = parsed[1].toUpperCase();
+    if (msg.content.toLowerCase().startsWith('.deposit')) {
+      const inputStr = msg.content;
+      const parsed = _.split(inputStr, ' ', 3);
 
-    //   let network = "";
-    //   if (typeof parsed[2] !== 'undefined') {
-    //     network = parsed[2].toLowerCase();
-    //   }
+      if (parsed.length < 2) {
+        msg.channel.send('Incorrect command format.');
+        return null;
+      } else {
+        const coin = parsed[1].toUpperCase();
+        const fetchDepositAddress = async () => {
+          try {
+            const data = {
+              coin: coin,
+              method: parsed[2] ? parsed[2] : '',
+            };
 
-    //   const fetchDepositAddress = async () => {
-    //     try {
-    //       const depositAddress = await getDeposit(ftx, coin, network);
-    //       const { address } = depositAddress;
+            const response = await getDepositAddress(data);
+            const { address, method } = response;
 
-    //       let str = '';
-    //       str += `**[${coin}] Deposit Address**\n**${address}** \n\n`;
+            let str = '';
+            str += `**[${coin}] (${method.toUpperCase()} Network)\nDeposit Address**: ${address}`;
 
-    //       if (str) {
-    //         msg.channel.send(str);
-    //       } else {
-    //         msg.channel.send("No balance || Error");
-    //       }
-    //     } catch (error) {
-    //       console.log("API Error", error)
-    //       msg.channel.send(`API Error:\n${error}`);
-    //     }
-    //   };
-
-    //   fetchDepositAddress();
-    // };
+            if (str) {
+              msg.channel.send(str);
+            } else {
+              msg.channel.send('No balance || Error');
+            }
+          } catch (error) {
+            console.log('API Error', error);
+            msg.channel.send(`API Error:\n${error.body.error}`);
+          }
+        };
+        fetchDepositAddress();
+      }
+    }
 
     // =====================================================
     // WITHDRAWALS: coin, size, address, code (2fa)
