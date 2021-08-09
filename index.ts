@@ -73,7 +73,9 @@ const start = async (client) => {
             x.cost
           }\n**Mark**: ${x.entryPrice}\n**Avg Entry**: ${
             x.avgOpenPrice
-          } | **B/E**: ${x.breakEvenPrice}\n**uPnL**: ${x.unrealizedPnl}\n\n`;
+          } | **B/E**: ${x.breakEvenPrice}\n**Liq**: ${
+            x.estimatedLiquidationPrice
+          }\n**uPnL**: ${x.unrealizedPnl}\n\n`;
         });
 
         if (str) {
