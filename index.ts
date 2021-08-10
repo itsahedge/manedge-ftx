@@ -60,7 +60,7 @@ const start = async (client) => {
     // GET ALL OPEN POSITIONS
     // .positions
     // =====================================================
-    if (msg.content === '.positions') {
+    if (msg.content === '.positions2') {
       const fetchPositions = async () => {
         const data = await ftxClient.getPositions(true);
         let str = '';
@@ -86,7 +86,7 @@ const start = async (client) => {
       fetchPositions();
     }
 
-    if (msg.content === '.positions2') {
+    if (msg.content === '.positions') {
       const fetchPositions = async () => {
         const data = await ftxClient.getPositions(true);
         let str = '';
