@@ -66,6 +66,33 @@ const start = async (client) => {
         let str = '';
         const positions = formatOpenPositions(data.result);
 
+        // add separate handler for showing position w liq: for .position liq
+        positions.map((x) => {
+          str += `**${x.side === 'LONG' ? '🟢' : '🔴'} ${
+            x.ticker
+          }**\n**Net Size**: ${x.netSize} ${x.asset}\n**Cost**: ${
+            x.cost
+          }\n**Mark**: ${x.entryPrice}\n**Avg Entry**: ${
+            x.avgOpenPrice
+          } | **B/E**: ${x.breakEvenPrice}\n**uPnL**: ${x.unrealizedPnl}\n\n`;
+        });
+
+        if (str) {
+          msg.channel.send(str);
+        } else {
+          msg.channel.send('No open positions');
+        }
+      };
+      fetchPositions();
+    }
+
+    if (msg.content === '.positions2') {
+      const fetchPositions = async () => {
+        const data = await ftxClient.getPositions(true);
+        let str = '';
+        const positions = formatOpenPositions(data.result);
+
+        // add separate handler for showing position w liq: for .position liq
         positions.map((x) => {
           str += `**${x.side === 'LONG' ? '🟢' : '🔴'} ${
             x.ticker
